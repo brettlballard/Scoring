@@ -26,7 +26,7 @@ if (arg$post){
 
 #Collect data
 print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!Running ',arg$test,' ',toupper(tt),'TEST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-df <- read.csv(paste0(arg$test,'-',tt,'.csv'))
+df <- read.csv(paste0('../rawdata/',arg$test,'-',tt,'.csv'))
 data <- as_tibble(df)
 
 #Defining Items based on argparser
@@ -105,7 +105,7 @@ for (i in Item){
 }
 par2pldf <- data.frame(Items = Item, Discrimination.2PL = avec, Difficulty.2PL = bvec)
 print(par2pldf)
-write.csv(par2pldf, paste0('irtscoring/2PLparameters',arg$test,tt,npart,'.csv'), row.names = FALSE)
+write.csv(par2pldf, paste0('2PLparameters',arg$test,tt,npart,'.csv'), row.names = FALSE)
 
 #3PL Model
 irt3plmodel <- mirt(data=data[,Item], model=1, itemtype='3PL')
@@ -128,7 +128,7 @@ for (i in Item){
 }
 par3pldf <- data.frame(Items = Item, Discrimination.3PL = avec, Difficulty.3PL = bvec, Guessing.3PL = gvec)
 print(par3pldf)
-write.csv(par3pldf, paste0('irtscoring/3PLparameters',arg$test,tt,npart,'.csv'), row.names = FALSE)
+write.csv(par3pldf, paste0('3PLparameters',arg$test,tt,npart,'.csv'), row.names = FALSE)
 
 #Calculate 2pl and 3pl expected totals for each student theta to compare with raw scores
 print_color('============================================================================\n','bgreen')
@@ -227,7 +227,7 @@ temppl3pl$Score.Type <- rep('3PL.Exp.Score',nrow(temppl3pl))
 pldata <- Reduce(function(x,y) merge(x,y,all = TRUE), list(list(tempplraw),list(temppl2pl),list(temppl3pl)))
 
 #Plotting score distribution
-pdf(paste0('irtscoring/ItemICCs',arg$test,tt,npart,'.pdf'))
+pdf(paste0('ItemICCs',arg$test,tt,npart,'.pdf'))
 print(ggplot(data=data, aes(x=Raw.Score))+geom_histogram(alpha=.5)+labs(title='Raw Score Distribution'))
 print(ggplot(data=data, aes(x=round(ExpScore.2PL,0)))+geom_histogram(alpha=.5)+labs(title='2PL Expected Score Distribution'))
 print(ggplot(data=data, aes(x=round(ExpScore.3PL,0)))+geom_histogram(alpha=.5)+labs(title='3PL Expected Score Distribution'))
