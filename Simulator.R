@@ -10,7 +10,7 @@ library(argparser)#anything parser related
 #Adding argument parsers so that I can vary the simulated data from the command line
 parser <- arg_parser('Options for varying the simulated data generated')
 parser <- add_argument(parser, "--flex", help = 'running in flex mode when TRUE',nargs='*',default=TRUE)
-parser <- add_argument(parser, "--name", help = 'name of output when in flex mode',nargs='*',default='TEMP')
+parser <- add_argument(parser, "--name", help = 'name of output when in flex mode if other name desired',nargs='*',default='TEMP')
 parser <- add_argument(parser, "--g", help = 'which model for simulated data to use when running in flex mode',nargs='*',default='IRT')
 #
 #NOISE: uses classical difficulty to generate the probabilty for each student

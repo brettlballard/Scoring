@@ -81,7 +81,7 @@ fmcepredata['Item27.29'] <- ifelse((fmcepredata$Item27 == 1 & fmcepredata$Item28
 fmcepredataTh <- fmcepredata %>%
 	select(all_of(fmceTh))
 print(fmcepredataTh)
-write.csv(fmcepredataTh, 'FMCE-pre-Th.csv', row.names = FALSE)
+write.csv(fmcepredataTh, 'FMCETh-pre.csv', row.names = FALSE)
 
 fmcepostdata['Item8.10'] <- ifelse((fmcepostdata$Item8 == 1 & fmcepostdata$Item9 == 1 & fmcepostdata$Item10 == 1),1,0)
 fmcepostdata['Item11.13'] <- ifelse((fmcepostdata$Item11 == 1 & fmcepostdata$Item12 == 1 & fmcepostdata$Item13 == 1),1,0)
@@ -90,7 +90,7 @@ fmcepostdataTh <- fmcepostdata %>%
 	select(all_of(fmceTh))
 print(fmcepostdata)#TEMP
 print(fmcepostdataTh)
-write.csv(fmcepostdataTh, 'FMCE-post-Th.csv', row.names = FALSE)
+write.csv(fmcepostdataTh, 'FMCETh-post.csv', row.names = FALSE)
 
 
 
