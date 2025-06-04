@@ -6,6 +6,7 @@ library(dplyr)#as_tibble and many other dataframe manipulation shortcuts
 library(data.table)#setnames function
 library(insight)#print_color function
 library(argparser)#anything parser related
+source('src/MultiPDF.R')#use of multiple random pdfs 
 
 #Adding argument parsers so that I can vary the simulated data from the command line
 parser <- arg_parser('Options for varying the simulated data generated')
@@ -19,17 +20,40 @@ parser <- add_argument(parser, "--g", help = 'which model for simulated data to 
 #
 parser <- add_argument(parser, "--nitems", help = 'number of items when in flex mode',nargs='*',default=20)
 parser <- add_argument(parser, "--ns", help = 'number of students when in flex mode',nargs='*',default=1000)
-parser <- add_argument(parser, "--diffmn", help = 'CTT difficulty mean when in flex mode',nargs='*',default=.5)
-parser <- add_argument(parser, "--diffsd", help = 'CTT difficulty sd when in flex mode',nargs='*',default=.15)
-parser <- add_argument(parser, "--modmn", help = 'CTT modifier mean when in flex mode',nargs='*',default=0)
-parser <- add_argument(parser, "--modsd", help = 'CTT modifier sd when in flex mode',nargs='*',default=.1)
-parser <- add_argument(parser, "--bmn", help = 'IRT difficulty mean when in flex mode',nargs='*',default=0)
-parser <- add_argument(parser, "--bsd", help = 'IRT difficulty sd when in flex mode',nargs='*',default=1)
-parser <- add_argument(parser, "--amn", help = 'IRT discrimination mean when in flex mode',nargs='*',default=1.5)
-parser <- add_argument(parser, "--asd", help = 'IRT discrimination sd when in flex mode',nargs='*',default=.5)
-parser <- add_argument(parser, "--thmn", help = 'IRT theta mean when in flex mode',nargs='*',default=0)
-parser <- add_argument(parser, "--thsd", help = 'IRT theta sd when in flex mode',nargs='*',default=1)
+parser <- add_argument(parser, "--pardist", help = 'parameter distribution type when in flex mode, options are norm and unif: default is norm',nargs='*',default='norm')
+parser <- add_argument(parser, "--diffmn", help = 'CTT difficulty mean when in flex mode',nargs='*',default=c('.5'))
+parser <- add_argument(parser, "--diffsd", help = 'CTT difficulty sd when in flex mode',nargs='*',default=c('.15'))
+parser <- add_argument(parser, "--diffw", help = 'CTT difficulty weights when in flex mode: default is eq',nargs='*',default=c('eq'))
+parser <- add_argument(parser, "--modmn", help = 'CTT modifier mean when in flex mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--modsd", help = 'CTT modifier sd when in flex mode',nargs='*',default=c('.1'))
+parser <- add_argument(parser, "--modw", help = 'CTT modifier weights when in flex mode: default is eq',nargs='*',default=c('eq'))
+parser <- add_argument(parser, "--bmn", help = 'IRT difficulty mean when in flex mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--bsd", help = 'IRT difficulty sd when in flex mode',nargs='*',default=c('1'))
+parser <- add_argument(parser, "--bw", help = 'IRT difficulty weights when in flex mode: default is eq',nargs='*',default=c('eq'))
+parser <- add_argument(parser, "--amn", help = 'IRT discrimination mean when in flex mode',nargs='*',default=c('1.5'))
+parser <- add_argument(parser, "--asd", help = 'IRT discrimination sd when in flex mode',nargs='*',default=c('.5'))
+parser <- add_argument(parser, "--aw", help = 'IRT discrimination weights when in flex mode: default is eq',nargs='*',default=c('eq'))
+parser <- add_argument(parser, "--thmn", help = 'IRT theta mean when in flex mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--thsd", help = 'IRT theta sd when in flex mode',nargs='*',default=c('1'))
+parser <- add_argument(parser, "--thw", help = 'IRT theta weights when in flex mode: default is eq',nargs='*',default=c('eq'))
 arg <- parse_args(parser)
+
+#Turning multiple input arguments into vectors
+arg$diffmn <- strsplit(arg$diffmn,',')[[1]]
+arg$diffsd <- strsplit(arg$diffsd,',')[[1]]
+arg$diffw <- strsplit(arg$diffw,',')[[1]]
+arg$modmn <- strsplit(arg$modmn,',')[[1]]
+arg$modsd <- strsplit(arg$modsd,',')[[1]]
+arg$modw <- strsplit(arg$modw,',')[[1]]
+arg$bmn <- strsplit(arg$bmn,',')[[1]]
+arg$bsd <- strsplit(arg$bsd,',')[[1]]
+arg$bw <- strsplit(arg$bw,',')[[1]]
+arg$amn <- strsplit(arg$amn,',')[[1]]
+arg$asd <- strsplit(arg$asd,',')[[1]]
+arg$aw <- strsplit(arg$aw,',')[[1]]
+arg$thmn <- strsplit(arg$thmn,',')[[1]]
+arg$thsd <- strsplit(arg$thsd,',')[[1]]
+arg$thw <- strsplit(arg$thw,',')[[1]]
 
 #Running checks on user input
 if (arg$flex){
@@ -86,9 +110,9 @@ if (arg$flex){
 	
 	#True item parameters that will be used in the generated data
 	if (arg$g == 'NOISE' | arg$g == 'CTT'){
-		par <- data.frame(Items = Item, Difficulty = rnorm(nitems, mean=arg$diffmn, sd=arg$diffsd))
+		par <- data.frame(Items = Item, Difficulty = multirnorm(nitems, mean=arg$diffmn, sd=arg$diffsd, w=arg$diffw))
 	}else if (arg$g == 'IRT'){
-		par <- data.frame(Items = Item, Difficulty = rnorm(nitems, mean=arg$bmn, sd=arg$bsd), Discrimination = rnorm(nitems, mean=arg$amn, sd=arg$asd))
+		par <- data.frame(Items = Item, Difficulty = multirnorm(nitems, mean=arg$bmn, sd=arg$bsd, w=arg$bw), Discrimination = multirnorm(nitems, mean=arg$amn, sd=arg$asd, w=arg$aw))
 	}
 	print_color(paste0('==============================================================================\n'),'bold')
 	print_color(paste0('==============================Item Parameters=================================\n'),'bold')
@@ -100,9 +124,9 @@ if (arg$flex){
        	if (arg$g == 'NOISE'){
 		df <- data.frame(ID = 1:ns)
 	}else if (arg$g == 'CTT'){
-		df <- data.frame(ID = 1:ns, Modifier = rnorm(ns, mean=arg$modmn, sd=arg$modsd))
+		df <- data.frame(ID = 1:ns, Modifier = multirnorm(ns, mean=arg$modmn, sd=arg$modsd, w=arg$modw))
 	}else if (arg$g == 'IRT'){
-		df <- data.frame(ID = 1:ns, Theta = rnorm(ns, mean=arg$thmn, sd=arg$thsd))
+		df <- data.frame(ID = 1:ns, Theta = multirnorm(ns, mean=arg$thmn, sd=arg$thsd, w=arg$thw))
 	}	
 
 	#Fill in student responses 
@@ -128,7 +152,7 @@ if (arg$flex){
 	}
 	print(as_tibble(df))
 	
-	#Saving fixed datasets 
+	#Saving flex datasets 
 	write.csv(df, paste0('simdata/flex/',arg$name,'-',arg$g,'-Data.csv'), row.names = FALSE)	
 
 }else {

@@ -207,10 +207,10 @@ if (arg$data %in% simdata){
 		tempdf <- read.csv(paste0('simdata/',tt,'/',name,'-',test,'-Items.csv'))
 	}
 	pardf <- tempdf
+	pardf <- pardf %>%
+		filter(Items %in% Item)
+	print(pardf)
 }
-pardf <- pardf %>%
-	filter(Items %in% Item)
-print(pardf)
 
 ##############################################################################################################
 ###############################################CTT ANALYSIS###################################################
@@ -262,7 +262,6 @@ for (i in Item){
 	parcount <- parcount + 1        
 }
 est.par2pldf <- data.frame(Items = Item, Est.Discrimination.2PL = avec, Est.Difficulty.2PL = bvec)
-print(est.par2pldf)
 if (tt == 'flex'){
 	write.csv(est.par2pldf, paste0('analysisout/summary/2PLpar-',name,'-',test,tt,npart,'.csv'), row.names = FALSE)
 }else {
@@ -435,9 +434,11 @@ if (arg$data %in% simdata){
 		#Theta parameter
 		th <- df$Theta
 		estth <- data$Est.Theta
+		rawscore <- data$Raw.Score
 		infindex <- which(grepl('Inf',estth))
 		newth <- th[-infindex]
 		newestth <- estth[-infindex]
+		newrawscore <- rawscore[-infindex]
 
 		#Interested in values of generated theta that led to infinities in the estimation 
 		neginfindex <- which(grepl('-Inf',estth))
@@ -452,7 +453,9 @@ if (arg$data %in% simdata){
 		thresid <- newth - newestth
 		thSSR <- sum(thresid**2)
 		print_color(paste0('The root mean square error of the student theta: ',round(sqrt((thSSR/npart)),4),'\n'),'bold')
-		print_color(paste0('The pearson correlation between true and estimated theta: ',round(cor(newth, newestth, method = 'pearson'),4),'\n'),'bold')
+		print_color(paste0('The pearson correlation between true theta and estimated theta: ',round(cor(newth, newestth, method = 'pearson'),4),'\n'),'bold')
+		print_color(paste0('The pearson correlation between true theta and raw score: ',round(cor(newth, newrawscore, method = 'pearson'),4),'\n'),'bold')
+		print_color(paste0('The pearson correlation between estimated theta and raw score: ',round(cor(newrawscore, newestth, method = 'pearson'),4),'\n'),'bold')
 		
 		#Plotting true vs estimated thetas
 	       	plotdf <- data.frame(True.Theta = newth, Est.Theta = newestth)
