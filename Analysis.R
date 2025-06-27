@@ -197,10 +197,10 @@ print(data)
 npart <- nrow(data)
 
 #Collect true parameter values
-print_color('============================================================================\n','bold')
-print_color('=========================True Item Parameter Values=========================\n','bold')
-print_color('============================================================================\n','bold')
 if (arg$data %in% simdata){
+	print_color('============================================================================\n','bold')
+	print_color('=========================True Item Parameter Values=========================\n','bold')
+	print_color('============================================================================\n','bold')
 	if (tt == 'fixed'){
 		tempdf <- read.csv(paste0('simdata/',tt,'/',test,'-Items.csv'))
 	}else if (tt == 'flex'){
@@ -280,12 +280,18 @@ print_color('============2PL Expected Totals v Raw Sum Scores For Each Student==
 print_color('============================================================================\n','bgreen')
 
 estscore2plvec <- c()
+westscore2plvec <- c()
 for (th in data$Est.Theta){
 	#Expected Test Score
 	ets <- ETS(items = Item, parameters = est.par2pldf, theta = th)
 	estscore2plvec <- c(estscore2plvec, ets)
+	
+	#Weighted Expected Test Score
+	wets <- ETS(items = Item, parameters = est.par2pldf, theta = th, max = TRUE)
+	westscore2plvec <- c(westscore2plvec, wets)
 }
 data$Est.ExpScore <- estscore2plvec
+data$Weighted.Est.ExpScore <- westscore2plvec
 
 #Converting students with perfect scores and inf thetas into perfect expected scores
 data$Est.ExpScore <- ifelse(data$Raw.Score == nitems,nitems,data$Est.ExpScore)
@@ -398,7 +404,7 @@ if (tt == 'flex'){
 print(ggplot(data=data, aes(x=Raw.Score))+geom_histogram(alpha=.5)+labs(title='Raw Score Distribution'))
 print(ggplot(data=data, aes(x=round(Est.ExpScore,0)))+geom_histogram(alpha=.5)+labs(title='2PL Expected Score Distribution'))
 for (i in Item){
-	print(ggplot(data=pldata, mapping=aes(x=Score,y=.data[[i]],color=Score.Type))+geom_point(size=2)+labs(title=paste0('Score vs Percentage Correct for\n',i))+scale_x_continuous(name='Score', limits=c(0,nitems))+scale_y_continuous(name='Percentage Correct', n.breaks=10, limits=c(0,1)))
+	print(ggplot(data=pldata, mapping=aes(x=Score,y=.data[[i]],color=Score.Type))+geom_point(size=2)+labs(title=paste0('Score vs Percentage Correct for\n',i))+scale_x_continuous(name='Score', limits=c(min(data$Est.ExpScore),max(data$Est.ExpScore)))+scale_y_continuous(name='Percentage Correct', n.breaks=10, limits=c(0,1)))
 }
 
 ##############################################################################################################
@@ -435,28 +441,54 @@ if (arg$data %in% simdata){
 		th <- df$Theta
 		estth <- data$Est.Theta
 		rawscore <- data$Raw.Score
+		expscore <- data$Est.ExpScore
+		wexpscore <- data$Weighted.Est.ExpScore
 		infindex <- which(grepl('Inf',estth))
-		newth <- th[-infindex]
-		newestth <- estth[-infindex]
-		newrawscore <- rawscore[-infindex]
-
-		#Interested in values of generated theta that led to infinities in the estimation 
-		neginfindex <- which(grepl('-Inf',estth))
-		posinfindex <- setdiff(infindex,neginfindex)
-		print_color(paste0('The mean true student thetas that resulted in positive infinities: ',round(mean(th[posinfindex]),4),'\n'),'bgreen')
-		print_color(paste0('The true student thetas that resulted in positive infinities:\n'),'bgreen')
-		print(th[posinfindex])
-		print_color(paste0('The mean true student thetas that resulted in negative infinities: ',round(mean(th[neginfindex]),4),'\n'),'bred')
-		print_color(paste0('The true student thetas that resulted in negative infinities:\n'),'bred')
-		print(th[neginfindex])
+		
+		if (length(infindex) != 0){
+			newth <- th[-infindex]
+			newestth <- estth[-infindex]
+			newrawscore <- rawscore[-infindex]
+			newexpscore <- expscore[-infindex]
+			newwexpscore <- wexpscore[-infindex]
+			
+			#Interested in values of generated theta that led to infinities in the estimation 
+			neginfindex <- which(grepl('-Inf',estth))
+			posinfindex <- setdiff(infindex,neginfindex)
+			print_color(paste0('The mean true student thetas that resulted in positive infinities: ',round(mean(th[posinfindex]),4),'\n'),'bgreen')
+			print_color(paste0('The true student thetas that resulted in positive infinities:\n'),'bgreen')
+			print(th[posinfindex])
+			print_color(paste0('The mean true student thetas that resulted in negative infinities: ',round(mean(th[neginfindex]),4),'\n'),'bred')
+			print_color(paste0('The true student thetas that resulted in negative infinities:\n'),'bred')
+			print(th[neginfindex])
+		}else {
+			newth <- th
+			newestth <- estth
+			newrawscore <- rawscore
+			newexpscore <- expscore
+			newwexpscore <- wexpscore
+		}
 
 		thresid <- newth - newestth
 		thSSR <- sum(thresid**2)
 		print_color(paste0('The root mean square error of the student theta: ',round(sqrt((thSSR/npart)),4),'\n'),'bold')
-		print_color(paste0('The pearson correlation between true theta and estimated theta: ',round(cor(newth, newestth, method = 'pearson'),4),'\n'),'bold')
-		print_color(paste0('The pearson correlation between true theta and raw score: ',round(cor(newth, newrawscore, method = 'pearson'),4),'\n'),'bold')
-		print_color(paste0('The pearson correlation between estimated theta and raw score: ',round(cor(newrawscore, newestth, method = 'pearson'),4),'\n'),'bold')
 		
+		#Outputting correlations
+		trthvestth <- cor(newth, newestth, method = 'pearson')
+		trthvraw <- cor(newth, newrawscore, method = 'pearson')
+		trthvexp <- cor(newth, newexpscore, method = 'pearson')
+		trthvwexp <- cor(newth, newwexpscore, method = 'pearson')
+		estthvraw <- cor(newrawscore, newestth, method = 'pearson')
+		print_color(paste0('The pearson correlation between true theta and estimated theta: ',round(trthvestth,4),'\n'),'bold')
+		print_color(paste0('The pearson correlation between true theta and raw score: ',round(trthvraw,4),'\n'),'bold')
+		print_color(paste0('The pearson correlation between true theta and unweighted expected score: ',round(trthvexp,4),'\n'),'bold')
+		print_color(paste0('The pearson correlation between true theta and weighted expected score: ',round(trthvwexp,4),'\n'),'bold')
+		print_color(paste0('The pearson correlation between estimated theta and raw score: ',round(estthvraw,4),'\n'),'bold')
+		corrout <- data.frame(Variable1 = c('True Theta','True Theta','True Theta','True Theta','Estimated Theta'), Variable2 = c('Estimated Theta','Raw Score','Unweighted Expected Score','Weighted Expected Score','Raw Score'), Correlation = c(trthvestth,trthvraw,trthvexp,trthvwexp,estthvraw))
+		write.csv(corrout, paste0('analysisout/summary/Correlations-',name,'-',test,tt,npart,'.csv'), row.names = FALSE)
+
+
+
 		#Plotting true vs estimated thetas
 	       	plotdf <- data.frame(True.Theta = newth, Est.Theta = newestth)
 		ggplot(data=plotdf, mapping=aes(x=True.Theta,y=Est.Theta))+geom_point(size=2)+labs(title=paste0('Estimated Theta vs True Theta'))+scale_x_continuous(name='True.Theta')+scale_y_continuous(name='Estimated Theta')

@@ -108,6 +108,36 @@ if (arg$flex){
 	Item <- paste0('Item',1:nitems)
 	ns <- arg$ns
 	
+	#Saving item generators
+	gen <- file(paste0('simdata/flex/',arg$name,'-',arg$g,'-Generators.txt'), 'w')
+	if (arg$g == 'NOISE' | arg$g == 'CTT'){
+		writeLines(paste0('Number of Items: ',nitems), con = gen)
+		writeLines(paste0('Number of Students: ',ns), con = gen)
+		writeLines(paste0('Parameter Distribution Type: ',arg$pardist), con = gen)
+		writeLines(paste0('Difficulty Mean: ',paste0(arg$diffmn,collapse=',')), con = gen)
+		writeLines(paste0('Difficulty Standard Deviation: ',paste0(arg$diffsd,collapse=',')), con = gen)
+		writeLines(paste0('Difficulty Weighting: ',paste0(arg$diffw,collapse=',')), con = gen)
+		if (arg$g == 'CTT'){
+			writeLines(paste0('Modifier Mean: ',paste0(arg$modmn,collapse=',')), con = gen)
+			writeLines(paste0('Modifier Standard Deviation: ',paste0(arg$modsd,collapse=',')), con = gen)
+			writeLines(paste0('Modifier Weighting: ',paste0(arg$modw,collapse=',')), con = gen)
+		}
+	}else if (arg$g == 'IRT'){
+		writeLines(paste0('Number of Items: ',nitems), con = gen)
+		writeLines(paste0('Number of Students: ',ns), con = gen)
+		writeLines(paste0('Parameter Distribution Type: ',arg$pardist), con = gen)
+		writeLines(paste0('Difficulty Mean: ',paste0(arg$bmn,collapse=',')), con = gen)
+		writeLines(paste0('Difficulty Standard Deviation: ',paste0(arg$bsd,collapse=',')), con = gen)
+		writeLines(paste0('Difficulty Weighting: ',paste0(arg$bw,collapse=',')), con = gen)
+		writeLines(paste0('Discrimination Mean: ',paste0(arg$amn,collapse=',')), con = gen)
+		writeLines(paste0('Discrimination Standard Deviation: ',paste0(arg$asd,collapse=',')), con = gen)
+		writeLines(paste0('Discrimination Weighting: ',paste0(arg$aw,collapse=',')), con = gen)
+		writeLines(paste0('Theta Mean: ',paste0(arg$thmn,collapse=',')), con = gen)
+		writeLines(paste0('Theta Standard Deviation: ',paste0(arg$thsd,collapse=',')), con = gen)
+		writeLines(paste0('Theta Weighting: ',paste0(arg$thw,collapse=',')), con = gen)
+	}
+	close(gen)
+
 	#True item parameters that will be used in the generated data
 	if (arg$g == 'NOISE' | arg$g == 'CTT'){
 		par <- data.frame(Items = Item, Difficulty = multirnorm(nitems, mean=arg$diffmn, sd=arg$diffsd, w=arg$diffw))
