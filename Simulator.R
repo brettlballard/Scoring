@@ -11,14 +11,18 @@ source('src/MultiPDF.R')#use of multiple random pdfs
 #Adding argument parsers so that I can vary the simulated data from the command line
 parser <- arg_parser('Options for varying the simulated data generated')
 parser <- add_argument(parser, "--flex", help = 'running in flex mode when TRUE',nargs='*',default=TRUE)
-parser <- add_argument(parser, "--name", help = 'name of output when in flex mode if other name desired',nargs='*',default='TEMP')
-parser <- add_argument(parser, "--g", help = 'which model for simulated data to use when running in flex mode',nargs='*',default='IRT')
+parser <- add_argument(parser, "--run", help = 'running in run mode when TRUE',nargs='*',default=TRUE)
+parser <- add_argument(parser, "--nrun", help = 'number of runs when in run mode',nargs='*',default=10)
+parser <- add_argument(parser, "--name", help = 'name of output when in flex/run mode if other name desired',nargs='*',default='TEMP')
+parser <- add_argument(parser, "--g", help = 'which model for simulated data to use when running in flex/run mode',nargs='*',default='IRT')
 #
 #NOISE: uses classical difficulty to generate the probabilty for each student
 #CTT: uses classical difficulty and a simple student modifier to generate the probability for each student
 #IRT: uses a 2PL model to generate the probability for each student
 #
-parser <- add_argument(parser, "--nitems", help = 'number of items when in flex mode',nargs='*',default=20)
+
+#flex mode arguments
+parser <- add_argument(parser, "--nitems", help = 'number of items when in flex mode',nargs='*',default=10)
 parser <- add_argument(parser, "--ns", help = 'number of students when in flex mode',nargs='*',default=1000)
 parser <- add_argument(parser, "--pardist", help = 'parameter distribution type when in flex mode, options are norm and unif: default is norm',nargs='*',default='norm')
 parser <- add_argument(parser, "--diffmn", help = 'CTT difficulty mean when in flex mode',nargs='*',default=c('.5'))
@@ -36,6 +40,25 @@ parser <- add_argument(parser, "--aw", help = 'IRT discrimination weights when i
 parser <- add_argument(parser, "--thmn", help = 'IRT theta mean when in flex mode',nargs='*',default=c('0'))
 parser <- add_argument(parser, "--thsd", help = 'IRT theta sd when in flex mode',nargs='*',default=c('1'))
 parser <- add_argument(parser, "--thw", help = 'IRT theta weights when in flex mode: default is eq',nargs='*',default=c('eq'))
+
+#run mode arguments
+parser <- add_argument(parser, "--nitemsinc", help = 'change in number of items between successive runs when in run mode',nargs='*',default=0)
+parser <- add_argument(parser, "--nsinc", help = 'change in number of students between successive runs when in run mode',nargs='*',default=0)
+parser <- add_argument(parser, "--diffmninc", help = 'change in CTT difficulty mean when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--diffsdinc", help = 'change in CTT difficulty sd when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--diffwinc", help = 'change in CTT difficulty weights when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--modmninc", help = 'change in CTT modifier mean when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--modsdinc", help = 'change in CTT modifier sd when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--modwinc", help = 'change in CTT modifier weights when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--bmninc", help = 'change in IRT difficulty mean when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--bsdinc", help = 'change in IRT difficulty sd when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--bwinc", help = 'change in IRT difficulty weights when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--amninc", help = 'change in IRT discrimination mean when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--asdinc", help = 'change in IRT discrimination sd when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--awinc", help = 'change in IRT discrimination weights when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--thmninc", help = 'change in IRT theta mean when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--thsdinc", help = 'change in IRT theta sd when in run mode',nargs='*',default=c('0'))
+parser <- add_argument(parser, "--thwinc", help = 'change in IRT theta weights when in run mode',nargs='*',default=c('0'))
 arg <- parse_args(parser)
 
 #Turning multiple input arguments into vectors
@@ -54,12 +77,32 @@ arg$aw <- strsplit(arg$aw,',')[[1]]
 arg$thmn <- strsplit(arg$thmn,',')[[1]]
 arg$thsd <- strsplit(arg$thsd,',')[[1]]
 arg$thw <- strsplit(arg$thw,',')[[1]]
+arg$diffmninc <- strsplit(arg$diffmninc,',')[[1]]
+arg$diffsdinc <- strsplit(arg$diffsdinc,',')[[1]]
+arg$diffwinc <- strsplit(arg$diffwinc,',')[[1]]
+arg$modmninc <- strsplit(arg$modmninc,',')[[1]]
+arg$modsdinc <- strsplit(arg$modsdinc,',')[[1]]
+arg$modwinc <- strsplit(arg$modwinc,',')[[1]]
+arg$bmninc <- strsplit(arg$bmninc,',')[[1]]
+arg$bsdinc <- strsplit(arg$bsdinc,',')[[1]]
+arg$bwinc <- strsplit(arg$bwinc,',')[[1]]
+arg$amninc <- strsplit(arg$amninc,',')[[1]]
+arg$asdinc <- strsplit(arg$asdinc,',')[[1]]
+arg$awinc <- strsplit(arg$awinc,',')[[1]]
+arg$thmninc <- strsplit(arg$thmninc,',')[[1]]
+arg$thsdinc <- strsplit(arg$thsdinc,',')[[1]]
+arg$thwinc <- strsplit(arg$thwinc,',')[[1]]
 
 #Running checks on user input
 if (arg$flex){
 	print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING FLEX MODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 }else {
 	print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING FIXED MODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+}
+
+#Running checks on user input
+if (arg$run){
+	print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING RUN MODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 }
 
 if (arg$g == 'NOISE'){
@@ -73,9 +116,11 @@ if (arg$g == 'NOISE'){
 	break
 }
 
+###############################################################################################################
+##################################################FUNCTIONS####################################################
+###############################################################################################################
 #Function to generate student repsonse
 response <- function(g,itempar,mod=0,th=0){
-	
 	set.seed(NULL)#used to unset the seed so the responses will differ for each item
 	st <- runif(1, min=0, max=1)
 	
@@ -101,89 +146,173 @@ response <- function(g,itempar,mod=0,th=0){
 	return(r)
 }
 
+#Function to increment arguments
+argincr <- function(val, incr, nincr){
+	vallst <- list()
+	templist <- list()
+	for (i in 1:length(val)){
+		if (incr[i] == '0'){
+			templist[[i]] <- list(rep(val[i],nincr))
+		}else {
+			templist[[i]] <- list(seq(from = as.numeric(val[i]), by = as.numeric(incr[i]), length.out = nincr))
+		}
+	}
+	for (j in 1:nincr){
+		i <- 1
+		temp <- ''
+		while (i <= length(val)){
+			tempvals <- unlist(templist[[i]])
+			if (i == 1){
+				temp <- paste0(temp,tempvals[j])
+			}else {
+				temp <- paste0(temp,',',tempvals[j])
+			}
+			i <- i + 1
+		}
+		vallst <- append(vallst,temp)
+	}
+	return(vallst)
+}
+
+###############################################################################################################
+##################################################SIMULATION###################################################
+###############################################################################################################
 #Simulating data 
 if (arg$flex){
 	#Flexible simulations based on user input
-	nitems <- arg$nitems
-	Item <- paste0('Item',1:nitems)
-	ns <- arg$ns
-	
-	#Saving item generators
-	gen <- file(paste0('simdata/flex/',arg$name,'-',arg$g,'-Generators.txt'), 'w')
-	if (arg$g == 'NOISE' | arg$g == 'CTT'){
-		writeLines(paste0('Number of Items: ',nitems), con = gen)
-		writeLines(paste0('Number of Students: ',ns), con = gen)
-		writeLines(paste0('Parameter Distribution Type: ',arg$pardist), con = gen)
-		writeLines(paste0('Difficulty Mean: ',paste0(arg$diffmn,collapse=',')), con = gen)
-		writeLines(paste0('Difficulty Standard Deviation: ',paste0(arg$diffsd,collapse=',')), con = gen)
-		writeLines(paste0('Difficulty Weighting: ',paste0(arg$diffw,collapse=',')), con = gen)
-		if (arg$g == 'CTT'){
-			writeLines(paste0('Modifier Mean: ',paste0(arg$modmn,collapse=',')), con = gen)
-			writeLines(paste0('Modifier Standard Deviation: ',paste0(arg$modsd,collapse=',')), con = gen)
-			writeLines(paste0('Modifier Weighting: ',paste0(arg$modw,collapse=',')), con = gen)
-		}
-	}else if (arg$g == 'IRT'){
-		writeLines(paste0('Number of Items: ',nitems), con = gen)
-		writeLines(paste0('Number of Students: ',ns), con = gen)
-		writeLines(paste0('Parameter Distribution Type: ',arg$pardist), con = gen)
-		writeLines(paste0('Difficulty Mean: ',paste0(arg$bmn,collapse=',')), con = gen)
-		writeLines(paste0('Difficulty Standard Deviation: ',paste0(arg$bsd,collapse=',')), con = gen)
-		writeLines(paste0('Difficulty Weighting: ',paste0(arg$bw,collapse=',')), con = gen)
-		writeLines(paste0('Discrimination Mean: ',paste0(arg$amn,collapse=',')), con = gen)
-		writeLines(paste0('Discrimination Standard Deviation: ',paste0(arg$asd,collapse=',')), con = gen)
-		writeLines(paste0('Discrimination Weighting: ',paste0(arg$aw,collapse=',')), con = gen)
-		writeLines(paste0('Theta Mean: ',paste0(arg$thmn,collapse=',')), con = gen)
-		writeLines(paste0('Theta Standard Deviation: ',paste0(arg$thsd,collapse=',')), con = gen)
-		writeLines(paste0('Theta Weighting: ',paste0(arg$thw,collapse=',')), con = gen)
-	}
-	close(gen)
-
-	#True item parameters that will be used in the generated data
-	if (arg$g == 'NOISE' | arg$g == 'CTT'){
-		par <- data.frame(Items = Item, Difficulty = multirnorm(nitems, mean=arg$diffmn, sd=arg$diffsd, w=arg$diffw))
-	}else if (arg$g == 'IRT'){
-		par <- data.frame(Items = Item, Difficulty = multirnorm(nitems, mean=arg$bmn, sd=arg$bsd, w=arg$bw), Discrimination = multirnorm(nitems, mean=arg$amn, sd=arg$asd, w=arg$aw))
-	}
-	print_color(paste0('==============================================================================\n'),'bold')
-	print_color(paste0('==============================Item Parameters=================================\n'),'bold')
-	print_color(paste0('==============================================================================\n'),'bold')
-	print(par)
-	write.csv(par, paste0('simdata/flex/',arg$name,'-',arg$g,'-Items.csv'), row.names = FALSE)	
-
-	#Setting true proficiencies
-       	if (arg$g == 'NOISE'){
-		df <- data.frame(ID = 1:ns)
-	}else if (arg$g == 'CTT'){
-		df <- data.frame(ID = 1:ns, Modifier = multirnorm(ns, mean=arg$modmn, sd=arg$modsd, w=arg$modw))
-	}else if (arg$g == 'IRT'){
-		df <- data.frame(ID = 1:ns, Theta = multirnorm(ns, mean=arg$thmn, sd=arg$thsd, w=arg$thw))
-	}	
-
-	#Fill in student responses 
-	print_color(paste0('==============================================================================\n'),'bcyan')
-	print_color(paste0('========================Generating Student Responses==========================\n'),'bcyan')
-	print_color(paste0('==============================================================================\n'),'bcyan')
-	for (j in Item){
-		temp <- c()
+	if (arg$run){
+		nrun <- arg$nrun
 		
-		for (i in 1:ns){
-			if (arg$g == 'NOISE'){
-				r <- response(g='NOISE', itempar=par[par$Items == j,])
-				temp <- c(temp, r)
-			}else if (arg$g == 'CTT'){
-				r <- response(g='CTT', itempar=par[par$Items == j,], mod=df[df$ID == i,]$Modifier)
-				temp <- c(temp, r)
-			}else if (arg$g == 'IRT'){
-				r <- response(g='IRT', itempar=par[par$Items == j,], th=df[df$ID == i,]$Theta)
-				temp <- c(temp, r)
+		#Incrementing values that need to be incremented	
+		arg$nitems <- argincr(val = arg$nitems, incr = arg$nitemsinc, nincr = nrun)
+		arg$ns <- argincr(val = arg$ns, incr = arg$nsinc, nincr = nrun)
+
+		if (arg$g == 'NOISE' | arg$g == 'CTT'){
+			arg$diffmn <- argincr(val = arg$diffmn, incr = arg$diffmninc, nincr = nrun)
+			arg$diffsd <- argincr(val = arg$diffsd, incr = arg$diffsdinc, nincr = nrun)
+			arg$diffw <- argincr(val = arg$diffw, incr = arg$diffwinc, nincr = nrun)
+			if (arg$g == 'CTT'){
+				arg$modmn <- argincr(val = arg$modmn, incr = arg$modmninc, nincr = nrun)
+				arg$modsd <- argincr(val = arg$modsd, incr = arg$modsdinc, nincr = nrun)
+				arg$modw <- argincr(val = arg$modw, incr = arg$modwinc, nincr = nrun)
 			}
+		}else if (arg$g == 'IRT'){
+			arg$bmn <- argincr(val = arg$bmn, incr = arg$bmninc, nincr = nrun)
+			arg$bsd <- argincr(val = arg$bsd, incr = arg$bsdinc, nincr = nrun)
+			arg$bw <- argincr(val = arg$bw, incr = arg$bwinc, nincr = nrun)
+			arg$amn <- argincr(val = arg$amn, incr = arg$amninc, nincr = nrun)
+			arg$asd <- argincr(val = arg$asd, incr = arg$asdinc, nincr = nrun)
+			arg$aw <- argincr(val = arg$aw, incr = arg$awinc, nincr = nrun)
+			arg$thmn <- argincr(val = arg$thmn, incr = arg$thmninc, nincr = nrun)
+			arg$thsd <- argincr(val = arg$thsd, incr = arg$thsdinc, nincr = nrun)
+			arg$thw <- argincr(val = arg$thw, incr = arg$thwinc, nincr = nrun)
 		}
-		df[[j]] <- temp
+	}else {
+		nrun <- 1
 	}
-	print(as_tibble(df))
-	
-	#Saving flex datasets 
-	write.csv(df, paste0('simdata/flex/',arg$name,'-',arg$g,'-Data.csv'), row.names = FALSE)	
+	for (r in 1:nrun){
+		#Setting incremented values
+		nitems <- arg$nitems[[r]]
+		Item <- paste0('Item',1:nitems)
+		ns <- arg$ns[[r]]
+		if (arg$g == 'NOISE' | arg$g == 'CTT'){
+			diffmn <- strsplit((arg$diffmn[[r]]),',')[[1]]
+			diffsd <- strsplit((arg$diffsd[[r]]),',')[[1]]
+			diffw <- strsplit((arg$diffw[[r]]),',')[[1]]
+			if (arg$g == 'CTT'){
+				modmn <- strsplit((arg$modmn[[r]]),',')[[1]]
+				modsd <- strsplit((arg$modsd[[r]]),',')[[1]]
+				modw <- strsplit((arg$modw[[r]]),',')[[1]]
+			}
+		}else if (arg$g == 'IRT'){
+			bmn <- strsplit((arg$bmn[[r]]),',')[[1]]
+			bsd <- strsplit((arg$bsd[[r]]),',')[[1]]
+			bw <- strsplit((arg$bw[[r]]),',')[[1]]
+			amn <- strsplit((arg$amn[[r]]),',')[[1]]
+			asd <- strsplit((arg$asd[[r]]),',')[[1]]
+			aw <- strsplit((arg$aw[[r]]),',')[[1]]
+			thmn <- strsplit((arg$thmn[[r]]),',')[[1]]
+			thsd <- strsplit((arg$thsd[[r]]),',')[[1]]
+			thw <- strsplit((arg$thw[[r]]),',')[[1]]
+		}
+		
+		#Saving item generators
+		gen <- file(paste0('simdata/flex/',paste0(arg$name,r),'-',arg$g,'-Generators.txt'), 'w')
+		if (arg$g == 'NOISE' | arg$g == 'CTT'){
+			writeLines(paste0('Number of Items: ',nitems), con = gen)
+			writeLines(paste0('Number of Students: ',ns), con = gen)
+			writeLines(paste0('Parameter Distribution Type: ',arg$pardist), con = gen)
+			writeLines(paste0('Difficulty Mean: ',paste0(diffmn,collapse=',')), con = gen)
+			writeLines(paste0('Difficulty Standard Deviation: ',paste0(diffsd,collapse=',')), con = gen)
+			writeLines(paste0('Difficulty Weighting: ',paste0(diffw,collapse=',')), con = gen)
+			if (arg$g == 'CTT'){
+				writeLines(paste0('Modifier Mean: ',paste0(modmn,collapse=',')), con = gen)
+				writeLines(paste0('Modifier Standard Deviation: ',paste0(modsd,collapse=',')), con = gen)
+				writeLines(paste0('Modifier Weighting: ',paste0(modw,collapse=',')), con = gen)
+			}
+		}else if (arg$g == 'IRT'){
+			writeLines(paste0('Number of Items: ',nitems), con = gen)
+			writeLines(paste0('Number of Students: ',ns), con = gen)
+			writeLines(paste0('Parameter Distribution Type: ',arg$pardist), con = gen)
+			writeLines(paste0('Difficulty Mean: ',paste0(bmn,collapse=',')), con = gen)
+			writeLines(paste0('Difficulty Standard Deviation: ',paste0(bsd,collapse=',')), con = gen)
+			writeLines(paste0('Difficulty Weighting: ',paste0(bw,collapse=',')), con = gen)
+			writeLines(paste0('Discrimination Mean: ',paste0(amn,collapse=',')), con = gen)
+			writeLines(paste0('Discrimination Standard Deviation: ',paste0(asd,collapse=',')), con = gen)
+			writeLines(paste0('Discrimination Weighting: ',paste0(aw,collapse=',')), con = gen)
+			writeLines(paste0('Theta Mean: ',paste0(thmn,collapse=',')), con = gen)
+			writeLines(paste0('Theta Standard Deviation: ',paste0(thsd,collapse=',')), con = gen)
+			writeLines(paste0('Theta Weighting: ',paste0(thw,collapse=',')), con = gen)
+		}
+		close(gen)
+
+		#True item parameters that will be used in the generated data
+		if (arg$g == 'NOISE' | arg$g == 'CTT'){
+			par <- data.frame(Items = Item, Difficulty = multirnorm(nitems, mean=diffmn, sd=diffsd, w=diffw))
+		}else if (arg$g == 'IRT'){
+			par <- data.frame(Items = Item, Difficulty = multirnorm(nitems, mean=bmn, sd=bsd, w=bw), Discrimination = multirnorm(nitems, mean=amn, sd=asd, w=aw))
+		}
+		print_color(paste0('==============================================================================\n'),'bold')
+		print_color(paste0('==============================Item Parameters=================================\n'),'bold')
+		print_color(paste0('==============================================================================\n'),'bold')
+		print(par)
+		write.csv(par, paste0('simdata/flex/',paste0(arg$name,r),'-',arg$g,'-Items.csv'), row.names = FALSE)	
+
+		#Setting true proficiencies
+		if (arg$g == 'NOISE'){
+			df <- data.frame(ID = 1:ns)
+		}else if (arg$g == 'CTT'){
+			df <- data.frame(ID = 1:ns, Modifier = multirnorm(ns, mean=arg$modmn, sd=arg$modsd, w=arg$modw))
+		}else if (arg$g == 'IRT'){
+			df <- data.frame(ID = 1:ns, Theta = multirnorm(ns, mean=arg$thmn, sd=arg$thsd, w=arg$thw))
+		}	
+
+		#Fill in student responses 
+		print_color(paste0('==============================================================================\n'),'bcyan')
+		print_color(paste0('========================Generating Student Responses==========================\n'),'bcyan')
+		print_color(paste0('==============================================================================\n'),'bcyan')
+		for (j in Item){
+			temp <- c()
+			
+			for (i in 1:ns){
+				if (arg$g == 'NOISE'){
+					r <- response(g='NOISE', itempar=par[par$Items == j,])
+					temp <- c(temp, r)
+				}else if (arg$g == 'CTT'){
+					r <- response(g='CTT', itempar=par[par$Items == j,], mod=df[df$ID == i,]$Modifier)
+					temp <- c(temp, r)
+				}else if (arg$g == 'IRT'){
+					r <- response(g='IRT', itempar=par[par$Items == j,], th=df[df$ID == i,]$Theta)
+					temp <- c(temp, r)
+				}
+			}
+			df[[j]] <- temp
+		}
+		print(as_tibble(df))
+		
+		#Saving flex datasets 
+		write.csv(df, paste0('simdata/flex/',paste0(arg$name,r),'-',arg$g,'-Data.csv'), row.names = FALSE)	
+	}#end of nrun loop
 
 }else {
 	#Generating massive datasets that are fixed
