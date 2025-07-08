@@ -1,0 +1,12 @@
+Number of Items: 25
+Number of Students: 10000
+Parameter Distribution Type: norm
+Difficulty Mean: 0
+Difficulty Standard Deviation: 0
+Difficulty Weighting: eq
+Discrimination Mean: .25,3
+Discrimination Standard Deviation: 0,0
+Discrimination Weighting: .7,.3
+Theta Mean: 0
+Theta Standard Deviation: 1
+Theta Weighting: eq

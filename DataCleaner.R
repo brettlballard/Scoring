@@ -7,10 +7,10 @@ library(data.table)#setnames function
 library(insight)#print_color function
 
 #Collect data
-fcidf <- read.csv(paste0('rawdata/FCI-ARK.csv'))
+fcidf <- read.csv(paste0('realdata/FCI-ARK.csv'))
 fcitbbl <- as_tibble(fcidf)
 
-fmcedf <- read.csv(paste0('rawdata/FMCE-WVU.csv'))
+fmcedf <- read.csv(paste0('realdata/FMCE-WVU.csv'))
 fmcetbbl <- as_tibble(fmcedf)
 
 #Define columns of interest
@@ -31,13 +31,13 @@ fcipostdata <- fcitbbl %>%
 	select(all_of(fcipost))
 setnames(fcipostdata, old = fcipost, new = fciItem)
 print(fcipostdata)
-write.csv(fcipostdata, 'FCI-post.csv', row.names = FALSE)
+write.csv(fcipostdata, 'realdata/FCI-post.csv', row.names = FALSE)
 
 fcipredata <- fcitbbl %>%
 	select(all_of(fcipre))
 setnames(fcipredata, old = fcipre, new = fciItem)
 print(fcipredata)
-write.csv(fcipredata, 'FCI-pre.csv', row.names = FALSE)
+write.csv(fcipredata, 'realdata/FCI-pre.csv', row.names = FALSE)
 
 #Clean FMCE data
 temp <- fmcetbbl %>%
@@ -58,7 +58,7 @@ for (i in 1:47){
 }
 fmcepredata <- pretemp[,fmceItem]
 print(fmcepredata)
-write.csv(fmcepredata, 'FMCE-pre.csv', row.names = FALSE)
+write.csv(fmcepredata, 'realdata/FMCE-pre.csv', row.names = FALSE)
 
 #Score and output posttest data
 posttemp <- temp %>%
@@ -70,7 +70,7 @@ for (i in 1:47){
 }
 fmcepostdata <- posttemp[,fmceItem]
 print(fmcepostdata)
-write.csv(fmcepostdata, 'FMCE-post.csv', row.names = FALSE)
+write.csv(fmcepostdata, 'realdata/FMCE-post.csv', row.names = FALSE)
 
 #Implement Thornton Scoring for FMCE
 fmceTh <- paste0('Item',c(1:4,7,'8.10',11.13,14,16:26,27.29,30:32,34,36,38,40:43))
@@ -81,7 +81,7 @@ fmcepredata['Item27.29'] <- ifelse((fmcepredata$Item27 == 1 & fmcepredata$Item28
 fmcepredataTh <- fmcepredata %>%
 	select(all_of(fmceTh))
 print(fmcepredataTh)
-write.csv(fmcepredataTh, 'FMCETh-pre.csv', row.names = FALSE)
+write.csv(fmcepredataTh, 'realdata/FMCETh-pre.csv', row.names = FALSE)
 
 fmcepostdata['Item8.10'] <- ifelse((fmcepostdata$Item8 == 1 & fmcepostdata$Item9 == 1 & fmcepostdata$Item10 == 1),1,0)
 fmcepostdata['Item11.13'] <- ifelse((fmcepostdata$Item11 == 1 & fmcepostdata$Item12 == 1 & fmcepostdata$Item13 == 1),1,0)
@@ -90,7 +90,7 @@ fmcepostdataTh <- fmcepostdata %>%
 	select(all_of(fmceTh))
 print(fmcepostdata)#TEMP
 print(fmcepostdataTh)
-write.csv(fmcepostdataTh, 'FMCETh-post.csv', row.names = FALSE)
+write.csv(fmcepostdataTh, 'realdata/FMCETh-post.csv', row.names = FALSE)
 
 
 

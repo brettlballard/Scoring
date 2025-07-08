@@ -1,6 +1,9 @@
 #!/usr/bin/env Rscript
 #Above line allows code to be run using ./Analysis.R in terminal
 
+#Curious about runtime
+start <- Sys.time()
+
 #Libraries and what they are used for commented next to them
 library(dplyr)#as_tibble and many other dataframe manipulation shortcuts
 library(data.table)#setnames function
@@ -9,6 +12,8 @@ library(insight)#print_color function
 library(argparser)#anything parser related
 library(mirt)#IRT stuff
 library(ggplot2)#plot related
+library(geomtextpath)#geom_text_segment
+library(ggrepel)#geom_text_repel
 
 #Adding argument parsers so that I can vary the scoring analysis from the command line
 parser <- arg_parser('Options for varying the run of the scoring analysis')
@@ -21,9 +26,18 @@ parser <- add_argument(parser, "--data", help = 'data being used; options are in
 #FMCE pre & post
 #FMCE Thornton pre & post
 #
-parser <- add_argument(parser, "--flexname", help = 'name for sim flex dataset',nargs='*',default='TEMP')
-parser <- add_argument(parser, "--items", help = 'items being used',nargs='*',default=c('All'))
+parser <- add_argument(parser, "--name", help = 'name for sim flex dataset',nargs='*',default='TEMP')
+parser <- add_argument(parser, "--nitems", help = 'number of items being investigated: format input as begin,end,increment',nargs='*',default=c(10,10,0))
+parser <- add_argument(parser, "--ns", help = 'number of students being investigated: format input as begin,end,increment',nargs='*',default=c(1000,1000,0))
+parser <- add_argument(parser, "--run", help = 'running in run mode when TRUE',nargs='*',default=FALSE)
+parser <- add_argument(parser, "--nrun", help = 'number of runs when in run mode',nargs='*',default=10)
+parser <- add_argument(parser, "--rmitems", help = 'items being removed',nargs='*',default=c('NULL'))
+parser <- add_argument(parser, "--postweights", help = 'posttest weights being used for weighted score in real data when TRUE',nargs='*',default=TRUE)
 arg <- parse_args(parser)
+
+#Turning multiple input arguments into vectors
+numitems <- seq(from = arg$nitems[1], to = arg$nitems[2], by = arg$nitems[3])
+numst <- seq(from = arg$ns[1], to = arg$ns[2], by = arg$ns[3])
 
 #Checking arguments and setting parameters based on them
 if (arg$data == 'NOISEfixed'){
@@ -34,7 +48,7 @@ if (arg$data == 'NOISEfixed'){
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING NOISE FLEX ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	test <- 'NOISE'
 	tt <- 'flex'
-	name <- arg$flexname
+	name <- arg$name
 }else if (arg$data == 'CTTfixed'){
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!RUNNING CTT FIXED ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	test <- 'CTT'
@@ -43,7 +57,7 @@ if (arg$data == 'NOISEfixed'){
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!RUNNING CTT FLEX ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	test <- 'CTT'
 	tt <- 'flex'
-	name <- arg$flexname
+	name <- arg$name
 }else if (arg$data == 'IRTfixed'){
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!RUNNING IRT FIXED ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	test <- 'IRT'
@@ -52,7 +66,7 @@ if (arg$data == 'NOISEfixed'){
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!RUNNING IRT FLEX ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	test <- 'IRT'
 	tt <- 'flex'
-	name <- arg$flexname
+	name <- arg$name
 }else if (arg$data == 'FCIpre'){
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!RUNNING FCI PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	test <- 'FCI'
@@ -80,6 +94,12 @@ if (arg$data == 'NOISEfixed'){
 }else {
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!INVALID DATA ARGUMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bred')
         break
+}
+
+if (arg$run){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING RUN ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+}else {
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!RUNNING SINGULAR ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 }
 
 ##############################################################################################################
@@ -154,6 +174,13 @@ ETS <- function(items, parameters, theta, max = FALSE, est.par = TRUE){
 	return(ets)
 }
 
+#Function to calculate weighted test score
+WSCORE <- function(itemscores, weights){
+	wsvec <- itemscores * weights
+	ws <- sum(wsvec)
+	return(ws)
+}
+
 ##############################################################################################################
 ###################################################DATA#######################################################
 ##############################################################################################################
@@ -162,350 +189,510 @@ ETS <- function(items, parameters, theta, max = FALSE, est.par = TRUE){
 realdata <- c('FCIpre','FCIpost','FMCEpre','FMCEpost','FMCEThpre','FMCEThpost')
 simdata <- c('NOISEfixed','NOISEflex','CTTfixed','CTTflex','IRTfixed','IRTflex')
 
-#Collect response data
-if (arg$data %in% realdata){
-	df <- read.csv(paste0('rawdata/',test,'-',tt,'.csv'))
-}else if (arg$data %in% simdata){
-	if (tt == 'fixed'){
-		df <- read.csv(paste0('simdata/',tt,'/',test,'-Data.csv'))
-	}else if (tt == 'flex'){
-		df <- read.csv(paste0('simdata/',tt,'/',name,'-',test,'-Data.csv'))
-	}
-}
-
-data <- as_tibble(df)
-
-#Defining Items based on argparser
-arg$items <- strsplit(arg$items,',')[[1]]
-if ('All' %in% arg$items){
-	Item <- colnames(data)
-	Item <- Item[grepl('Item',Item)]
+if (arg$run){
+	nrun <- arg$nrun
 }else {
-	Item <- paste0('Item',arg$items)
-}
-nitems <- length(Item)
-print(Item)
-
-#Printing out the full tibble so one can see column names and data types
-print_color('============================================================================\n','bold')
-print_color('========================Data Set With Selected Items========================\n','bold')
-print_color('============================================================================\n','bold')
-data <- data %>%
-	select(all_of(Item))
-data$Raw.Score <- apply(data[,Item],1,sum)
-print(data)
-npart <- nrow(data)
-
-#Collect true parameter values
-if (arg$data %in% simdata){
-	print_color('============================================================================\n','bold')
-	print_color('=========================True Item Parameter Values=========================\n','bold')
-	print_color('============================================================================\n','bold')
-	if (tt == 'fixed'){
-		tempdf <- read.csv(paste0('simdata/',tt,'/',test,'-Items.csv'))
-	}else if (tt == 'flex'){
-		tempdf <- read.csv(paste0('simdata/',tt,'/',name,'-',test,'-Items.csv'))
-	}
-	pardf <- tempdf
-	pardf <- pardf %>%
-		filter(Items %in% Item)
-	print(pardf)
+	nrun <- 1
 }
 
-##############################################################################################################
-###############################################CTT ANALYSIS###################################################
-##############################################################################################################
-
-#Making dataframe to save classical parameters
-diffvec <- c()
-discvec <- c()
-for (i in Item){
-#disc <- function(data, item, total, perc){
-	diffvec <- c(diffvec, mean(data[[i]]))
-	discvec <- c(discvec, disc(data=data, item=i, total='Raw.Score', perc=.75))
-}
-est.parcttdf <- data.frame(Items = Item, Est.Difficulty.CTT = diffvec, Est.Discrimination.CTT = discvec)
-
-#Print estimated CTT parameter values
-print_color('============================================================================\n','bold')
-print_color('=====================Estimated CTT Item Parameter Values====================\n','bold')
-print_color('============================================================================\n','bold')
-print(est.parcttdf)
-
-##############################################################################################################
-###############################################IRT ANALYSIS###################################################
-##############################################################################################################
-
-#Retrieve 2pl parameters for each item and theta estimates from data
-print_color('============================================================================\n','bgreen')
-print_color('=====================2PL Parameter Values For Each Item=====================\n','bgreen')
-print_color('============================================================================\n','bgreen')
-
-#2PL Model
-irt2plmodel <- mirt(data=data[,Item], model=1, itemtype='2PL')
-coeff <- coef(irt2plmodel, IRTpars=TRUE, simplify=TRUE)
-print(coeff)
-
-#Save estimated thetas
-scores2pl <- fscores(irt2plmodel, method = 'ML', full.scores = TRUE, full.scores.SE = TRUE) 
-est.theta <- scores2pl[,1]
-data$Est.Theta <- est.theta
-
-#Making dataframe to save IRT parameters
-parameters <- unlist(coeff[1])
-parcount <- 1
-avec <- c()
-bvec <- c()
-for (i in Item){
-	avec <- c(avec,parameters[parcount])
-	bvec <- c(bvec,parameters[parcount+nitems])
-	parcount <- parcount + 1        
-}
-est.par2pldf <- data.frame(Items = Item, Est.Discrimination.2PL = avec, Est.Difficulty.2PL = bvec)
-if (tt == 'flex'){
-	write.csv(est.par2pldf, paste0('analysisout/summary/2PLpar-',name,'-',test,tt,npart,'.csv'), row.names = FALSE)
-}else {
-	write.csv(est.par2pldf, paste0('analysisout/summary/2PLpar-',test,tt,npart,'.csv'), row.names = FALSE)
-}
-
-#Print estimated IRT parameter values
-print_color('============================================================================\n','bold')
-print_color('=====================Estimated IRT Item Parameter Values====================\n','bold')
-print_color('============================================================================\n','bold')
-print(est.par2pldf)
-
-#Calculate 2pl expected totals for each student theta to compare with raw scores
-print_color('============================================================================\n','bgreen')
-print_color('============2PL Expected Totals v Raw Sum Scores For Each Student===========\n','bgreen')
-print_color('============================================================================\n','bgreen')
-
-estscore2plvec <- c()
-westscore2plvec <- c()
-for (th in data$Est.Theta){
-	#Expected Test Score
-	ets <- ETS(items = Item, parameters = est.par2pldf, theta = th)
-	estscore2plvec <- c(estscore2plvec, ets)
-	
-	#Weighted Expected Test Score
-	wets <- ETS(items = Item, parameters = est.par2pldf, theta = th, max = TRUE)
-	westscore2plvec <- c(westscore2plvec, wets)
-}
-data$Est.ExpScore <- estscore2plvec
-data$Weighted.Est.ExpScore <- westscore2plvec
-
-#Converting students with perfect scores and inf thetas into perfect expected scores
-data$Est.ExpScore <- ifelse(data$Raw.Score == nitems,nitems,data$Est.ExpScore)
-scoredata <- data[,c('Raw.Score','Est.ExpScore')]
-print(scoredata)
-
-print_color('===================Estimated Expected Total v Raw Sum Score=================\n','bcyan')
-#Calculating residual sum of squares 
-resid <- scoredata$Raw.Score - scoredata$Est.ExpScore
-SSR <- sum(resid**2)
-print_color(paste0('The root mean square error of the estimated expected total vs raw sum score: ',round(sqrt((SSR/npart)),4),'\n'),'bold')
-
-#Plotting estimated expected total v raw sum score
-ggplot(data=scoredata, mapping=aes(x=Raw.Score,y=Est.ExpScore))+geom_point(size=2)+labs(title=paste0('Estimated Expected Score vs Raw Score'))+scale_x_continuous(name='Raw Score')+scale_y_continuous(name='Estimated Expected Score')
-if (tt == 'flex'){
-	ggsave(file=paste0('EstExpvRawSum-',name,'-',test,tt,npart,'.pdf'),path = paste0('analysisout/plots/'))
-}else {
-	ggsave(file=paste0('EstExpvRawSum-',test,tt,npart,'.pdf'),path = paste0('analysisout/plots/'))
-}
-
-#Plotting true estimated expected total vs the other two above
-if (arg$data %in% simdata){
-	if (test == 'IRT'){
-		#Retrieving True expected test scores
-		score2plvec <- c()
-		for (th in df$Theta){
-			#Expected Test Score
-			ets <- ETS(items = Item, parameters = pardf, theta = th, est.par = FALSE)
-			score2plvec <- c(score2plvec, ets)
-		}
-		scoredata$True.ExpScore <- score2plvec
-
-		print_color('======================True Expected Total v Raw Sum Score===================\n','bcyan')
-		#Calculating residual sum of squares 
-		resid <- scoredata$Raw.Score - scoredata$True.ExpScore
-		SSR <- sum(resid**2)
-		print_color(paste0('The root mean square error of the true expected total vs raw sum score: ',round(sqrt((SSR/npart)),4),'\n'),'bold')
-
-		#Plotting true expected total v raw sum score
-		ggplot(data=scoredata, mapping=aes(x=Raw.Score,y=True.ExpScore))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Raw Score'))+scale_x_continuous(name='Raw Score')+scale_y_continuous(name='True Expected Score')
-		if (tt == 'flex'){
-			ggsave(file=paste0('TrueExpvRawSum-',name,'-',test,tt,npart,'.pdf'),path = paste0('analysisout/plots/'))
-		}else {
-			ggsave(file=paste0('TrueExpvRawSum-',test,tt,npart,'.pdf'),path = paste0('analysisout/plots/'))
-		}
-
-		print_color('================True Expected Total v Estimated Expected Total==============\n','bcyan')
-		#Calculating residual sum of squares 
-		resid <- scoredata$Est.ExpScore - scoredata$True.ExpScore
-		SSR <- sum(resid**2)
-		print_color(paste0('The root mean square error of the true expected total vs estimated expected total: ',round(sqrt((SSR/npart)),4),'\n'),'bold')
-
-		#Plotting true expected total v estimated expected total
-		ggplot(data=scoredata, mapping=aes(x=Est.ExpScore,y=True.ExpScore))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Estimated Expected Score'))+scale_x_continuous(name='Estimated Expected Score')+scale_y_continuous(name='True Expected Score')
-		if (tt == 'flex'){
-			ggsave(file=paste0('TrueExpvEstExp-',name,'-',test,tt,npart,'.pdf'),path = paste0('analysisout/plots/'))
-		}else {
-			ggsave(file=paste0('TrueExpvEstExp-',test,tt,npart,'.pdf'),path = paste0('analysisout/plots/'))
-		}
-	}
-}#end of IRT only loop
-
-#Make score ICCs 
-print_color('============================================================================\n','bgreen')
-print_color('==================================Data ICCs=================================\n','bgreen')
-print_color('============================================================================\n','bgreen')
-
-#Raw Score
-print_color('==================================Raw Score=================================\n','bcyan')
-tempraw <- data[,c(Item,'Raw.Score')]
-tempfreq <- tempraw %>%
-	group_by(Raw.Score) %>%
-	summarize(n()) %>%
-	as.data.frame() %>%
-	print()
-tempplraw <- tempraw %>%
-	group_by(Raw.Score) %>%
-	summarize_at(Item, mean) %>%
-	as.data.frame() %>%
-	rename(Score = Raw.Score) %>%
-	print()
-tempplraw$Score.Type <- rep('Raw.Total.Score',nrow(tempplraw))
-
-#2PL Expected Score
-print_color('==============================2PL Expected Score============================\n','bcyan')
-temp2pl <- data[,c(Item,'Est.ExpScore')]
-temp2pl$Est.ExpScore <- round(temp2pl$Est.ExpScore,0)
-tempfreq <- temp2pl %>%
-	group_by(Est.ExpScore) %>%
-	summarize(n()) %>%
-	as.data.frame() %>%
-	print()
-temppl2pl <- temp2pl %>%
-	group_by(Est.ExpScore) %>%
-	summarize_at(Item, mean) %>%
-	as.data.frame() %>%
-	rename(Score = Est.ExpScore) %>%
-	print()
-temppl2pl$Score.Type <- rep('Est.Exp.Score',nrow(temppl2pl))
-
-#Merging Data
-pldata <- Reduce(function(x,y) merge(x,y,all = TRUE), list(list(tempplraw),list(temppl2pl)))
-
-#Plotting score distribution
-if (tt == 'flex'){
-	pdf(paste0('analysisout/plots/ItemICCs-',name,'-',test,tt,npart,'.pdf'))
-}else {
-	pdf(paste0('analysisout/plots/ItemICCs-',test,tt,npart,'.pdf'))
-}
-print(ggplot(data=data, aes(x=Raw.Score))+geom_histogram(alpha=.5)+labs(title='Raw Score Distribution'))
-print(ggplot(data=data, aes(x=round(Est.ExpScore,0)))+geom_histogram(alpha=.5)+labs(title='2PL Expected Score Distribution'))
-for (i in Item){
-	print(ggplot(data=pldata, mapping=aes(x=Score,y=.data[[i]],color=Score.Type))+geom_point(size=2)+labs(title=paste0('Score vs Percentage Correct for\n',i))+scale_x_continuous(name='Score', limits=c(min(data$Est.ExpScore),max(data$Est.ExpScore)))+scale_y_continuous(name='Percentage Correct', n.breaks=10, limits=c(0,1)))
-}
-
-##############################################################################################################
-#################################COMPARING ESTIMATED AND TRUE PARAMETERS######################################
-##############################################################################################################
-
-if (arg$data %in% simdata){
-	#Compare estimated parameters and the true parameters used in data generation 
-	print_color('============================================================================\n','bgreen')
-	print_color('=========================Estimated v True Parameters========================\n','bgreen')
-	print_color('============================================================================\n','bgreen')
-	
-	#PARAMETERS
-	#pardf
-	#est.parcttdf
-	#est.par2pldf
-	
-	#THETAS
-	#data$Est.Theta
-	#df$Theta
-
-	if (test == 'IRT'){
-		#b parameter
-		bresid <- pardf$Difficulty - est.par2pldf$Est.Difficulty.2PL
-		bSSR <- sum(bresid**2)
-		print_color(paste0('The root mean square error of the IRT difficulty parameter, b: ',round(sqrt((bSSR/npart)),4),'\n'),'bold')
-		
-		#a parameter
-		aresid <- pardf$Discrimination - est.par2pldf$Est.Discrimination.2PL
-		aSSR <- sum(aresid**2)
-		print_color(paste0('The root mean square error of the IRT discrimination parameter, a: ',round(sqrt((aSSR/npart)),4),'\n'),'bold')
-
-		#Theta parameter
-		th <- df$Theta
-		estth <- data$Est.Theta
-		rawscore <- data$Raw.Score
-		expscore <- data$Est.ExpScore
-		wexpscore <- data$Weighted.Est.ExpScore
-		infindex <- which(grepl('Inf',estth))
-		
-		if (length(infindex) != 0){
-			newth <- th[-infindex]
-			newestth <- estth[-infindex]
-			newrawscore <- rawscore[-infindex]
-			newexpscore <- expscore[-infindex]
-			newwexpscore <- wexpscore[-infindex]
+for (nit in numitems){
+	for (nst in numst){
+		for (r in 1:nrun){
+			#Collect response data
+			if (arg$data %in% realdata){
+				df <- read.csv(paste0('realdata/',test,'-',tt,'.csv'))
+			}else if (arg$data %in% simdata){
+				if (tt == 'fixed'){
+					df <- read.csv(paste0('simdata/',tt,'/',test,'-Data.csv'))
+				}else if (tt == 'flex'){
+					df <- read.csv(paste0('simdata/',tt,'/',test,'/',name,'/',nit,'items','/',nst,'students','/',paste0(name,r),'-Data.csv'))
+				}
+			}
 			
-			#Interested in values of generated theta that led to infinities in the estimation 
-			neginfindex <- which(grepl('-Inf',estth))
-			posinfindex <- setdiff(infindex,neginfindex)
-			print_color(paste0('The mean true student thetas that resulted in positive infinities: ',round(mean(th[posinfindex]),4),'\n'),'bgreen')
-			print_color(paste0('The true student thetas that resulted in positive infinities:\n'),'bgreen')
-			print(th[posinfindex])
-			print_color(paste0('The mean true student thetas that resulted in negative infinities: ',round(mean(th[neginfindex]),4),'\n'),'bred')
-			print_color(paste0('The true student thetas that resulted in negative infinities:\n'),'bred')
-			print(th[neginfindex])
-		}else {
-			newth <- th
-			newestth <- estth
-			newrawscore <- rawscore
-			newexpscore <- expscore
-			newwexpscore <- wexpscore
-		}
+			data <- as_tibble(df)
 
-		thresid <- newth - newestth
-		thSSR <- sum(thresid**2)
-		print_color(paste0('The root mean square error of the student theta: ',round(sqrt((thSSR/npart)),4),'\n'),'bold')
-		
-		#Outputting correlations
-		trthvestth <- cor(newth, newestth, method = 'pearson')
-		trthvraw <- cor(newth, newrawscore, method = 'pearson')
-		trthvexp <- cor(newth, newexpscore, method = 'pearson')
-		trthvwexp <- cor(newth, newwexpscore, method = 'pearson')
-		estthvraw <- cor(newrawscore, newestth, method = 'pearson')
-		print_color(paste0('The pearson correlation between true theta and estimated theta: ',round(trthvestth,4),'\n'),'bold')
-		print_color(paste0('The pearson correlation between true theta and raw score: ',round(trthvraw,4),'\n'),'bold')
-		print_color(paste0('The pearson correlation between true theta and unweighted expected score: ',round(trthvexp,4),'\n'),'bold')
-		print_color(paste0('The pearson correlation between true theta and weighted expected score: ',round(trthvwexp,4),'\n'),'bold')
-		print_color(paste0('The pearson correlation between estimated theta and raw score: ',round(estthvraw,4),'\n'),'bold')
-		corrout <- data.frame(Variable1 = c('True Theta','True Theta','True Theta','True Theta','Estimated Theta'), Variable2 = c('Estimated Theta','Raw Score','Unweighted Expected Score','Weighted Expected Score','Raw Score'), Correlation = c(trthvestth,trthvraw,trthvexp,trthvwexp,estthvraw))
-		write.csv(corrout, paste0('analysisout/summary/Correlations-',name,'-',test,tt,npart,'.csv'), row.names = FALSE)
+			#Defining Items based on argparser
+			Item <- colnames(data)
+			Item <- Item[grepl('Item',Item)]
+			arg$rmitems <- strsplit(arg$rmitems,',')[[1]]
+			if (!('NULL' %in% arg$items)){
+				rmitems <- paste0('Item',arg$rmitems)
+				Item <- Item[!(Item %in% rmitems)]
+			}
+			nitems <- length(Item)
+			print(Item)
 
+			#Printing out the full tibble so one can see column names and data types
+			print_color('============================================================================\n','bold')
+			print_color('========================Data Set With Selected Items========================\n','bold')
+			print_color('============================================================================\n','bold')
+			data <- data %>%
+				select(all_of(Item))
+			data$Raw.Score <- apply(data[,Item],1,sum)
+			print(data)
+			npart <- nrow(data)
 
+			#Collect true parameter values
+			if (arg$data %in% simdata){
+				print_color('============================================================================\n','bold')
+				print_color('=========================True Item Parameter Values=========================\n','bold')
+				print_color('============================================================================\n','bold')
+				if (tt == 'fixed'){
+					tempdf <- read.csv(paste0('simdata/',tt,'/',test,'-Items.csv'))
+				}else if (tt == 'flex'){
+					tempdf <- read.csv(paste0('simdata/',tt,'/',test,'/',name,'/',nit,'items','/',nst,'students','/',paste0(name,r),'-Items.csv'))
+				}
+				pardf <- tempdf
+				pardf <- pardf %>%
+					filter(Items %in% Item)
+				print(pardf)
+			}
 
-		#Plotting true vs estimated thetas
-	       	plotdf <- data.frame(True.Theta = newth, Est.Theta = newestth)
-		ggplot(data=plotdf, mapping=aes(x=True.Theta,y=Est.Theta))+geom_point(size=2)+labs(title=paste0('Estimated Theta vs True Theta'))+scale_x_continuous(name='True.Theta')+scale_y_continuous(name='Estimated Theta')
-		if (tt == 'flex'){
-			ggsave(file=paste0('TrueThvEstTh-',name,'-',test,tt,npart,'.pdf'),path = paste0('analysisout/plots/'))
-		}else {
-			ggsave(file=paste0('TrueThvEstTh-',test,tt,npart,'.pdf'),path = paste0('analysisout/plots/'))
-		}
+			##############################################################################################################
+			###############################################CTT ANALYSIS###################################################
+			##############################################################################################################
+
+			#Making dataframe to save classical parameters
+			diffvec <- c()
+			discvec <- c()
+			for (i in Item){
+				diffvec <- c(diffvec, mean(data[[i]]))
+				discvec <- c(discvec, disc(data=data, item=i, total='Raw.Score', perc=.75))
+			}
+			est.parcttdf <- data.frame(Items = Item, Est.Difficulty.CTT = diffvec, Est.Discrimination.CTT = discvec)
+
+			#Print estimated CTT parameter values
+			print_color('============================================================================\n','bold')
+			print_color('=====================Estimated CTT Item Parameter Values====================\n','bold')
+			print_color('============================================================================\n','bold')
+			print(est.parcttdf)
+
+			##############################################################################################################
+			###############################################IRT ANALYSIS###################################################
+			##############################################################################################################
+
+			#Retrieve 2pl parameters for each item and theta estimates from data
+			print_color('============================================================================\n','bgreen')
+			print_color('=====================2PL Parameter Values For Each Item=====================\n','bgreen')
+			print_color('============================================================================\n','bgreen')
+
+			#2PL Model
+			irt2plmodel <- mirt(data=data[,Item], model=1, itemtype='2PL')
+			coeff <- coef(irt2plmodel, IRTpars=TRUE, simplify=TRUE)
+			print(M2(irt2plmodel))
+			print(itemfit(irt2plmodel, fit_stats = c('S_X2','G2')))
+			print(coeff)
+
+			#Save estimated thetas
+			scores2pl <- fscores(irt2plmodel, method = 'ML', full.scores = TRUE, full.scores.SE = TRUE) 
+			est.theta <- scores2pl[,1]
+			data$Est.Theta <- est.theta
+
+			#Making dataframe to save IRT parameters
+			parameters <- unlist(coeff[1])
+			parcount <- 1
+			avec <- c()
+			bvec <- c()
+			for (i in Item){
+				avec <- c(avec,parameters[parcount])
+				bvec <- c(bvec,parameters[parcount+nitems])
+				parcount <- parcount + 1        
+			}
+			est.par2pldf <- data.frame(Items = Item, Est.Discrimination.2PL = avec, Est.Difficulty.2PL = bvec)
+			if (tt == 'flex'){
+				if (!dir.exists(paste0('analysisout/summary/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students'))){dir.create(paste0('analysisout/summary/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students'), recursive = TRUE)}
+				write.csv(est.par2pldf, paste0('analysisout/summary/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/2PLpar-',paste0(name,r),'.csv'), row.names = FALSE)
+			}else {
+				if (!dir.exists(paste0('analysisout/summary/',test,'/',tt))){dir.create(paste0('analysisout/summary/',test,'/',tt), recursive = TRUE)}
+				write.csv(est.par2pldf, paste0('analysisout/summary/',test,'/',tt,'/2PLpar-',npart,'.csv'), row.names = FALSE)
+			}
+
+			#Linear fit comparing difficulty and discrimination
+			if (test == 'FMCETh'){
+				linmod <- lm(Est.Difficulty.2PL ~ Est.Discrimination.2PL, data = est.par2pldf) 
+				print(summary(linmod))
+				
+				print_color('============================================================================\n','bred')
+				print_color('=====================3PL Parameter Values For Each Item=====================\n','bred')
+				print_color('============================================================================\n','bred')
 			
+				#3PL Model
+				irt3plmodel <- mirt(data=data[,Item], model=1, itemtype='3PL')
+				coeff <- coef(irt3plmodel, IRTpars=TRUE, simplify=TRUE)
+				print(M2(irt3plmodel))
+				print(coeff)
+			}
 
-	}else if (test == 'CTT'){
-		#Difficulty parameter
-		diffresid <- pardf$Difficulty - est.parcttdf$Est.Difficulty.CTT
-		diffSSR <- sum(diffresid**2)
-		print_color(paste0('The root mean square error of the CTT difficulty parameter: ',round(sqrt((diffSSR/npart)),4),'\n'),'bold')
-		
-	}
-}#end of estimated vs true analysis
+			#Plotting 2PL difficulty vs 2PL discrimination
+			ggplot(data=est.par2pldf, mapping=aes(x=Est.Difficulty.2PL,y=Est.Discrimination.2PL))+geom_point(size=2)+geom_text_repel(label=est.par2pldf$Items, size=2,max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+labs(title='2PL Item Difficulty vs 2PL Item Discrimination')+scale_x_continuous(name='2PL Item Difficulty', n.breaks=10, limits=c(min(est.par2pldf$Est.Difficulty.2PL),max(est.par2pldf$Est.Difficulty.2PL)))+scale_y_continuous(name='2PL Item Discrimination', n.breaks=10, limits=c(min(est.par2pldf$Est.Discrimination.2PL),max(est.par2pldf$Est.Discrimination.2PL)))
+			if (tt == 'flex'){
+				if (!dir.exists(paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students'))){dir.create(paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students'), recursive = TRUE)}
+				ggsave(file=paste0('2PLDiffvDisc-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+			}else {
+				if (!dir.exists(paste0('analysisout/plots/',test,'/',tt))){dir.create(paste0('analysisout/plots/',test,'/',tt), recursive = TRUE)}
+				ggsave(file=paste0('2PLDiffvDisc-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+			}
 
 
+			#Print estimated IRT parameter values
+			print_color('============================================================================\n','bold')
+			print_color('=====================Estimated IRT Item Parameter Values====================\n','bold')
+			print_color('============================================================================\n','bold')
+			print(est.par2pldf)
+
+			#Calculating a weighted score from the 2PL item discrimination
+			print_color('============================================================================\n','bgreen')
+			print_color('=========================Weighted Score Calculations========================\n','bgreen')
+			print_color('============================================================================\n','bgreen')
+			
+			#Assigning weights to the scores
+			if (arg$data %in% realdata){
+				if (arg$postweights){
+					wdf <- read.csv(paste0('analysisout/summary/',test,'/post/2PLpar-',npart,'.csv'))
+					weights <- wdf$Est.Discrimination.2PL
+				}else {
+					wdf <- read.csv(paste0('analysisout/summary/',test,'/pre/2PLpar-',npart,'.csv'))
+					weights <- wdf$Est.Discrimination.2PL
+				}
+			}else {
+				weights <- est.par2pldf$Est.Discrimination.2PL
+			}
+			
+			wscorevec <- c()
+			for (part in 1:npart){
+				scores <- data[part,Item]
+				wscore <- WSCORE(itemscores = scores, weights = weights)
+				wscorevec <- c(wscorevec,wscore)
+			}
+			data$Weighted.Score <- wscorevec
+			print(data[,c('Raw.Score','Weighted.Score')])
+
+			#Calculate 2pl expected totals for each student theta 
+			print_color('============================================================================\n','bgreen')
+			print_color('=============================2PL Expected Totals============================\n','bgreen')
+			print_color('============================================================================\n','bgreen')
+
+			estscore2plvec <- c()
+			for (th in data$Est.Theta){
+				#Expected Test Score
+				ets <- ETS(items = Item, parameters = est.par2pldf, theta = th)
+				estscore2plvec <- c(estscore2plvec, ets)
+			}
+			data$Est.ExpScore <- estscore2plvec
+			
+			#Converting students with perfect scores and inf thetas into perfect expected scores
+			data$Est.ExpScore <- ifelse(data$Raw.Score == nitems,nitems,data$Est.ExpScore)
+			print(data[,c('Raw.Score','Est.ExpScore')])
+
+			#Comparing the three scoring methods 
+			print_color('============================================================================\n','bgreen')
+			print_color('===================Comparison of Differing Scoring Methods==================\n','bgreen')
+			print_color('============================================================================\n','bgreen')
+			scoredata <- data[,c('Raw.Score','Weighted.Score','Est.ExpScore')]
+			print(scoredata)
+
+			print_color('===================Estimated Expected Total v Raw Sum Score=================\n','bcyan')
+			#Calculating residual sum of squares 
+			resid <- scoredata$Raw.Score - scoredata$Est.ExpScore
+			SSR <- sum(resid**2)
+			print_color(paste0('The root mean square error of the estimated expected total vs raw sum score: ',round(sqrt((SSR/npart)),4),'\n'),'bold')
+
+			#Plotting estimated expected total v raw sum score
+			ggplot(data=scoredata, mapping=aes(x=Raw.Score,y=Est.ExpScore))+geom_point(size=2)+labs(title=paste0('Estimated Expected Score vs Raw Score'))+scale_x_continuous(name='Raw Score')+scale_y_continuous(name='Estimated Expected Score')
+			if (tt == 'flex'){
+				ggsave(file=paste0('EstExpvRawSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+			}else {
+				ggsave(file=paste0('EstExpvRawSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+			}
+
+			print_color('=================Estimated Expected Total v Weighted Sum Score==============\n','bcyan')
+			#Plotting estimated expected total v weighted sum score
+			ggplot(data=scoredata, mapping=aes(x=Weighted.Score,y=Est.ExpScore))+geom_point(size=2)+labs(title=paste0('Estimated Expected Score vs Weighted Score'))+scale_x_continuous(name='Weighted Score')+scale_y_continuous(name='Estimated Expected Score')
+			if (tt == 'flex'){
+				ggsave(file=paste0('EstExpvWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+			}else {
+				ggsave(file=paste0('EstExpvWeightSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+			}
+
+			print_color('======================Weighted Sum Score v Raw Sum Score====================\n','bcyan')
+			#Plotting weighted sum score v raw sum score
+			ggplot(data=scoredata, mapping=aes(x=Raw.Score,y=Weighted.Score))+geom_point(size=2)+labs(title=paste0('Weighted Score vs Raw Score'))+scale_x_continuous(name='Raw Score')+scale_y_continuous(name='Weighted Score')
+			if (tt == 'flex'){
+				ggsave(file=paste0('WeightSumvRawSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+			}else {
+				ggsave(file=paste0('WeightSumvRawSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+			}
+
+			#Plotting true estimated expected total vs the other two above
+			if (arg$data %in% simdata){
+				if (test == 'IRT'){
+					#Retrieving True expected test scores
+					score2plvec <- c()
+					for (th in df$Theta){
+						#Expected Test Score
+						ets <- ETS(items = Item, parameters = pardf, theta = th, est.par = FALSE)
+						score2plvec <- c(score2plvec, ets)
+					}
+					data$True.ExpScore <- score2plvec
+					scoredata$True.ExpScore <- score2plvec
+
+					print_color('======================True Expected Total v Raw Sum Score===================\n','bcyan')
+					#Calculating residual sum of squares 
+					resid <- scoredata$Raw.Score - scoredata$True.ExpScore
+					SSR <- sum(resid**2)
+					print_color(paste0('The root mean square error of the true expected total vs raw sum score: ',round(sqrt((SSR/npart)),4),'\n'),'bold')
+
+					#Plotting true expected total v raw sum score
+					ggplot(data=scoredata, mapping=aes(x=Raw.Score,y=True.ExpScore))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Raw Score'))+scale_x_continuous(name='Raw Score')+scale_y_continuous(name='True Expected Score')
+					if (tt == 'flex'){
+						ggsave(file=paste0('TrueExpvRawSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+					}else {
+						ggsave(file=paste0('TrueExpvRawSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+					}
+
+					print_color('================True Expected Total v Estimated Expected Total==============\n','bcyan')
+					#Calculating residual sum of squares 
+					resid <- scoredata$Est.ExpScore - scoredata$True.ExpScore
+					SSR <- sum(resid**2)
+					print_color(paste0('The root mean square error of the true expected total vs estimated expected total: ',round(sqrt((SSR/npart)),4),'\n'),'bold')
+
+					#Plotting true expected total v estimated expected total
+					ggplot(data=scoredata, mapping=aes(x=Est.ExpScore,y=True.ExpScore))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Estimated Expected Score'))+scale_x_continuous(name='Estimated Expected Score')+scale_y_continuous(name='True Expected Score')
+					if (tt == 'flex'){
+						ggsave(file=paste0('TrueExpvEstExp-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+					}else {
+						ggsave(file=paste0('TrueExpvEstExp-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+					}
+
+					print_color('===================True Expected Total v Weighted Sum Score=================\n','bcyan')
+					#Plotting true expected total v weighted sum score
+					ggplot(data=scoredata, mapping=aes(x=Est.ExpScore,y=Weighted.Score))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Weighted Score'))+scale_x_continuous(name='Weighted Score')+scale_y_continuous(name='True Expected Score')
+					if (tt == 'flex'){
+						ggsave(file=paste0('TrueExpvWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+					}else {
+						ggsave(file=paste0('TrueExpvWeightSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+					}
+
+				}
+			}#end of IRT only loop
+
+			#Make score ICCs 
+			print_color('============================================================================\n','bgreen')
+			print_color('==================================Data ICCs=================================\n','bgreen')
+			print_color('============================================================================\n','bgreen')
+
+			#Raw Score
+			print_color('==================================Raw Score=================================\n','bcyan')
+			tempraw <- data[,c(Item,'Raw.Score')]
+			tempfreq <- tempraw %>%
+				group_by(Raw.Score) %>%
+				summarize(n()) %>%
+				as.data.frame() %>%
+				print()
+			tempplraw <- tempraw %>%
+				group_by(Raw.Score) %>%
+				summarize_at(Item, mean) %>%
+				as.data.frame() %>%
+				rename(Score = Raw.Score) %>%
+				print()
+			tempplraw$Score.Type <- rep('Raw.Total.Score',nrow(tempplraw))
+
+			#2PL Expected Score
+			print_color('==============================2PL Expected Score============================\n','bcyan')
+			temp2pl <- data[,c(Item,'Est.ExpScore')]
+			temp2pl$Est.ExpScore <- round(temp2pl$Est.ExpScore,0)
+			tempfreq <- temp2pl %>%
+				group_by(Est.ExpScore) %>%
+				summarize(n()) %>%
+				as.data.frame() %>%
+				print()
+			temppl2pl <- temp2pl %>%
+				group_by(Est.ExpScore) %>%
+				summarize_at(Item, mean) %>%
+				as.data.frame() %>%
+				rename(Score = Est.ExpScore) %>%
+				print()
+			temppl2pl$Score.Type <- rep('Est.Exp.Score',nrow(temppl2pl))
+
+			#Merging Data
+			pldata <- Reduce(function(x,y) merge(x,y,all = TRUE), list(list(tempplraw),list(temppl2pl)))
+
+			#Plotting score distribution
+			if (tt == 'flex'){
+				pdf(paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/ItemICCs-',paste0(name,r),'.pdf'))
+			}else {
+				pdf(paste0('analysisout/plots/',test,'/',tt,'/ItemICCs-',npart,'.pdf'))
+			}
+			print(ggplot(data=data, aes(x=Raw.Score))+geom_histogram(alpha=.5)+labs(title='Raw Score Distribution'))
+			print(ggplot(data=data, aes(x=round(Est.ExpScore,0)))+geom_histogram(alpha=.5)+labs(title='2PL Expected Score Distribution'))
+			for (i in Item){
+				print(ggplot(data=pldata, mapping=aes(x=Score,y=.data[[i]],color=Score.Type))+geom_point(size=2)+labs(title=paste0('Score vs Percentage Correct for\n',i))+scale_x_continuous(name='Score', limits=c(min(data$Est.ExpScore),max(data$Est.ExpScore)))+scale_y_continuous(name='Percentage Correct', n.breaks=10, limits=c(0,1)))
+			}
+			dev.off()
+
+			##############################################################################################################
+			##############################CORRELATIONS BETWEEN DIFFERING SCORING METHODS##################################
+			##############################################################################################################
+			
+			#Comparing the different scores
+			print_color('============================================================================\n','bgreen')
+			print_color('========================Differing Scoring Procedures========================\n','bgreen')
+			print_color('============================================================================\n','bgreen')
+
+			#Theta parameter
+			estth <- data$Est.Theta
+			rawscore <- data$Raw.Score
+			wscore <- data$Weighted.Score
+			estexp <- data$Est.ExpScore
+			infindex <- which(grepl('Inf',estth))
+			
+			if (length(infindex) != 0){
+				newestth <- estth[-infindex]
+				newrawscore <- rawscore[-infindex]
+				newwscore <- wscore[-infindex]
+				newestexp <- estexp[-infindex]
+			}else {
+				newestth <- estth
+				newrawscore <- rawscore
+				newwscore <- wscore
+				newestexp <- estexp
+			}
+			
+			#Outputting correlations
+			estthvraw <- cor(newrawscore, newestth, method = 'pearson')
+			estthvwscore <- cor(newwscore, newestth, method = 'pearson')
+			estthvestexp <- cor(newestexp, newestth, method = 'pearson')
+			rawvwscore <- cor(newrawscore, newwscore, method = 'pearson')
+			rawvestexp <- cor(newrawscore, newestexp, method = 'pearson')
+			wscorevestexp <- cor(newestexp, newwscore, method = 'pearson')
+			print_color(paste0('The pearson correlation between estimated theta and raw score: ',round(estthvraw,4),'\n'),'bold')
+			print_color(paste0('The pearson correlation between estimated theta and weighted score: ',round(estthvwscore,4),'\n'),'bold')
+			print_color(paste0('The pearson correlation between estimated theta and estimated expected score: ',round(estthvestexp,4),'\n'),'bold')
+			print_color(paste0('The pearson correlation between raw score and weighted score: ',round(rawvwscore,4),'\n'),'bold')
+			print_color(paste0('The pearson correlation between raw score and estimated expected score: ',round(rawvestexp,4),'\n'),'bold')
+			print_color(paste0('The pearson correlation between weighted score and estimated expected score: ',round(wscorevestexp,4),'\n'),'bold')
+			
+			##############################################################################################################
+			############################CORRELATIONS BETWEEN ESTIMATED AND TRUE PARAMETERS################################
+			##############################################################################################################
+
+			if (arg$data %in% simdata){
+				#Compare estimated parameters and the true parameters used in data generation 
+				print_color('============================================================================\n','bgreen')
+				print_color('=========================Estimated v True Parameters========================\n','bgreen')
+				print_color('============================================================================\n','bgreen')
+				
+				#PARAMETERS
+				#pardf
+				#est.parcttdf
+				#est.par2pldf
+				
+				#THETAS
+				#data$Est.Theta
+				#df$Theta
+
+				if (test == 'IRT'){
+					#b parameter
+					bresid <- pardf$Difficulty - est.par2pldf$Est.Difficulty.2PL
+					bSSR <- sum(bresid**2)
+					print_color(paste0('The root mean square error of the IRT difficulty parameter, b: ',round(sqrt((bSSR/npart)),4),'\n'),'bold')
+					
+					#a parameter
+					aresid <- pardf$Discrimination - est.par2pldf$Est.Discrimination.2PL
+					aSSR <- sum(aresid**2)
+					print_color(paste0('The root mean square error of the IRT discrimination parameter, a: ',round(sqrt((aSSR/npart)),4),'\n'),'bold')
+
+					#Theta parameter
+					th <- df$Theta
+					trexp <- data$True.ExpScore
+					estth <- data$Est.Theta
+					rawscore <- data$Raw.Score
+					wscore <- data$Weighted.Score
+					estexp <- data$Est.ExpScore
+					infindex <- which(grepl('Inf',estth))
+					
+					if (length(infindex) != 0){
+						newth <- th[-infindex]
+						newtrexp <- trexp[-infindex]
+						newestth <- estth[-infindex]
+						newrawscore <- rawscore[-infindex]
+						newwscore <- wscore[-infindex]
+						newestexp <- estexp[-infindex]
+						
+						#Interested in values of generated theta that led to infinities in the estimation 
+						neginfindex <- which(grepl('-Inf',estth))
+						posinfindex <- setdiff(infindex,neginfindex)
+						print_color(paste0('The mean true student thetas that resulted in positive infinities: ',round(mean(th[posinfindex]),4),'\n'),'bgreen')
+						print_color(paste0('The true student thetas that resulted in positive infinities:\n'),'bgreen')
+						print(th[posinfindex])
+						print_color(paste0('The mean true student thetas that resulted in negative infinities: ',round(mean(th[neginfindex]),4),'\n'),'bred')
+						print_color(paste0('The true student thetas that resulted in negative infinities:\n'),'bred')
+						print(th[neginfindex])
+					}else {
+						newth <- th
+						newtrexp <- trexp
+						newestth <- estth
+						newrawscore <- rawscore
+						newwscore <- wscore
+						newestexp <- estexp
+					}
+
+					thresid <- newth - newestth
+					thSSR <- sum(thresid**2)
+					print_color(paste0('The root mean square error of the student theta: ',round(sqrt((thSSR/npart)),4),'\n'),'bold')
+					
+					#Outputting correlations
+					trthvestth <- cor(newth, newestth, method = 'pearson')
+					trthvraw <- cor(newth, newrawscore, method = 'pearson')
+					trthvwscore <- cor(newth, newwscore, method = 'pearson')
+					trthvestexp <- cor(newth, newestexp, method = 'pearson')
+					trexpvestth <- cor(newtrexp, newestth, method = 'pearson')
+					trexpvraw <- cor(newtrexp, newrawscore, method = 'pearson')
+					trexpvwscore <- cor(newtrexp, newwscore, method = 'pearson')
+					trexpvestexp <- cor(newtrexp, newestexp, method = 'pearson')
+					estthvraw <- cor(newrawscore, newestth, method = 'pearson')
+					print_color(paste0('The pearson correlation between true theta and estimated theta: ',round(trthvestth,4),'\n'),'bold')
+					print_color(paste0('The pearson correlation between true theta and raw score: ',round(trthvraw,4),'\n'),'bold')
+					print_color(paste0('The pearson correlation between true theta and weighted score: ',round(trthvwscore,4),'\n'),'bold')
+					print_color(paste0('The pearson correlation between true theta and expected score: ',round(trthvestexp,4),'\n'),'bold')
+					print_color(paste0('The pearson correlation between true expected score and estimated theta: ',round(trexpvestth,4),'\n'),'bold')
+					print_color(paste0('The pearson correlation between true expected score and raw score: ',round(trexpvraw,4),'\n'),'bold')
+					print_color(paste0('The pearson correlation between true expected score and weighted score: ',round(trexpvwscore,4),'\n'),'bold')
+					print_color(paste0('The pearson correlation between true expected score and expected score: ',round(trexpvestexp,4),'\n'),'bold')
+					print_color(paste0('The pearson correlation between estimated theta and raw score: ',round(estthvraw,4),'\n'),'bold')
+
+					corrout <- data.frame(Variable1 = c('True Theta','True Theta','True Theta','True Theta','True Expected Score','True Expected Score','True Expected Score','True Expected Score','Estimated Theta'), Variable2 = c('Estimated Theta','Raw Score','Weighted Score','Estimated Expected Score','Estimated Theta','Raw Score','Weighted Score','Estimated Expected Score','Raw Score'), Correlation = c(trthvestth,trthvraw,trthvwscore,trthvestexp,trexpvestth,trexpvraw,trexpvwscore,trexpvestexp,estthvraw))
+					if (tt == 'flex'){
+						write.csv(corrout, paste0('analysisout/summary/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/Correlations-',paste0(name,r),'.csv'), row.names = FALSE)
+					}else {
+						write.csv(corrout, paste0('analysisout/summary/',test,'/',tt,'/Correlations-',npart,'.csv'), row.names = FALSE)
+					}
+
+					#Plotting true vs estimated thetas
+					plotdf <- data.frame(True.Theta = newth, Est.Theta = newestth)
+					ggplot(data=plotdf, mapping=aes(x=True.Theta,y=Est.Theta))+geom_point(size=2)+labs(title=paste0('Estimated Theta vs True Theta'))+scale_x_continuous(name='True.Theta')+scale_y_continuous(name='Estimated Theta')
+					if (tt == 'flex'){
+						ggsave(file=paste0('TrueThvEstTh-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+					}else {
+						ggsave(file=paste0('TrueThvEstTh-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+					}
+						
+
+				}else if (test == 'CTT'){
+					#Difficulty parameter
+					diffresid <- pardf$Difficulty - est.parcttdf$Est.Difficulty.CTT
+					diffSSR <- sum(diffresid**2)
+					print_color(paste0('The root mean square error of the CTT difficulty parameter: ',round(sqrt((diffSSR/npart)),4),'\n'),'bold')
+					
+				}
+			}#end of estimated vs true analysis
+		}#end of run analysis 
+	}#end of number of students loop
+}#end of number of items loop
+
+#Curious about runtime
+end <- Sys.time()
+hrdiff <- as.numeric(difftime(end, start, units = 'hours'))
+mindiff <- as.numeric(difftime(end, start, units = 'mins'))
+secdiff <- as.numeric(difftime(end, start, units = 'secs'))
+print_color(paste0('Runtime: ',floor(hrdiff),' hours ',floor(mindiff %% 60),' mins ',round(secdiff %% 60),' seconds\n'),'bgreen')

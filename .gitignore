@@ -1,5 +1,5 @@
-# ignore everything in rawdata folders
-rawdata/
+# ignore everything in realdata folders
+realdata/
 # ignore everything in inventories folders
 inventories/
 # ignore everything in the papers folder
