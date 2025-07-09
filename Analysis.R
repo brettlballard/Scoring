@@ -280,7 +280,7 @@ for (nit in numitems){
 			irt2plmodel <- mirt(data=data[,Item], model=1, itemtype='2PL')
 			coeff <- coef(irt2plmodel, IRTpars=TRUE, simplify=TRUE)
 			print(M2(irt2plmodel))
-			print(itemfit(irt2plmodel, fit_stats = c('S_X2','G2')))
+			print(itemfit(irt2plmodel, fit_stats = c('S_X2')))
 			print(coeff)
 
 			#Save estimated thetas
@@ -365,8 +365,23 @@ for (nit in numitems){
 				wscorevec <- c(wscorevec,wscore)
 			}
 			data$Weighted.Score <- wscorevec
-			print(data[,c('Raw.Score','Weighted.Score')])
+			data$Scaled.Weighted.Score <- data$Weighted.Score *(nitems / sum(weights))
+			data$Diff.SWS.Raw <- data$Scaled.Weighted.Score - data$Raw.Score
+			data$Raw.Score.Z <- scale(data$Raw.Score)
+			data$Scaled.Weighted.Score.Z <- scale(data$Scaled.Weighted.Score)
+			data$Diff.SWS.Raw.Z <- data$Scaled.Weighted.Score.Z - data$Raw.Score.Z
+			data$Raw.Perc <- (data$Raw.Score / nitems) * 100
+			data$SWS.Perc <- (data$Scaled.Weighted.Score / nitems) * 100
+			data$Diff.SWS.Raw.Perc <- data$SWS.Perc - data$Raw.Perc
 
+			print(head(as.data.frame(data[,c('Raw.Perc','SWS.Perc','Diff.SWS.Raw.Perc','Raw.Score','Weighted.Score','Scaled.Weighted.Score','Diff.SWS.Raw','Raw.Score.Z','Scaled.Weighted.Score.Z','Diff.SWS.Raw.Z')])))
+			print_color(paste0('The mean of difference between raw percentage and scaled weighted percentage: ',round(mean(data$Diff.SWS.Raw.Perc),4),'\n'),'bold')
+			print_color(paste0('The sd of difference between raw percentage and scaled weighted percentage: ',round(sd(data$Diff.SWS.Raw.Perc),4),'\n'),'bold')
+			print_color(paste0('The mean of difference between raw score and scaled weighted score: ',round(mean(data$Diff.SWS.Raw),4),'\n'),'bold')
+			print_color(paste0('The sd of difference between raw score and scaled weighted score: ',round(sd(data$Diff.SWS.Raw),4),'\n'),'bold')
+			print_color(paste0('The mean of difference between raw score-z and scaled weighted score-z: ',round(mean(data$Diff.SWS.Raw.Z),4),'\n'),'bold')
+			print_color(paste0('The sd of difference between raw score-z and scaled weighted score-z: ',round(sd(data$Diff.SWS.Raw.Z),4),'\n'),'bold')
+			
 			#Calculate 2pl expected totals for each student theta 
 			print_color('============================================================================\n','bgreen')
 			print_color('=============================2PL Expected Totals============================\n','bgreen')
