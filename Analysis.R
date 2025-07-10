@@ -32,6 +32,7 @@ parser <- add_argument(parser, "--ns", help = 'number of students being investig
 parser <- add_argument(parser, "--run", help = 'running in run mode when TRUE',nargs='*',default=FALSE)
 parser <- add_argument(parser, "--nrun", help = 'number of runs when in run mode',nargs='*',default=10)
 parser <- add_argument(parser, "--rmitems", help = 'items being removed',nargs='*',default=c('NULL'))
+parser <- add_argument(parser, "--useitems", help = 'items being used',nargs='*',default=c('NULL'))
 parser <- add_argument(parser, "--postweights", help = 'posttest weights being used for weighted score in real data when TRUE',nargs='*',default=TRUE)
 arg <- parse_args(parser)
 
@@ -215,9 +216,14 @@ for (nit in numitems){
 			Item <- colnames(data)
 			Item <- Item[grepl('Item',Item)]
 			arg$rmitems <- strsplit(arg$rmitems,',')[[1]]
-			if (!('NULL' %in% arg$items)){
+			arg$useitems <- strsplit(arg$useitems,',')[[1]]
+			if (!('NULL' %in% arg$rmitems)){
 				rmitems <- paste0('Item',arg$rmitems)
 				Item <- Item[!(Item %in% rmitems)]
+			}
+			if (!('NULL' %in% arg$useitems)){
+				useitems <- paste0('Item',arg$useitems)
+				Item <- Item[Item %in% useitems]
 			}
 			nitems <- length(Item)
 			print(Item)
@@ -307,22 +313,6 @@ for (nit in numitems){
 				write.csv(est.par2pldf, paste0('analysisout/summary/',test,'/',tt,'/2PLpar-',npart,'.csv'), row.names = FALSE)
 			}
 
-			#Linear fit comparing difficulty and discrimination
-			if (test == 'FMCETh'){
-				linmod <- lm(Est.Difficulty.2PL ~ Est.Discrimination.2PL, data = est.par2pldf) 
-				print(summary(linmod))
-				
-				print_color('============================================================================\n','bred')
-				print_color('=====================3PL Parameter Values For Each Item=====================\n','bred')
-				print_color('============================================================================\n','bred')
-			
-				#3PL Model
-				irt3plmodel <- mirt(data=data[,Item], model=1, itemtype='3PL')
-				coeff <- coef(irt3plmodel, IRTpars=TRUE, simplify=TRUE)
-				print(M2(irt3plmodel))
-				print(coeff)
-			}
-
 			#Plotting 2PL difficulty vs 2PL discrimination
 			ggplot(data=est.par2pldf, mapping=aes(x=Est.Difficulty.2PL,y=Est.Discrimination.2PL))+geom_point(size=2)+geom_text_repel(label=est.par2pldf$Items, size=2,max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+labs(title='2PL Item Difficulty vs 2PL Item Discrimination')+scale_x_continuous(name='2PL Item Difficulty', n.breaks=10, limits=c(min(est.par2pldf$Est.Difficulty.2PL),max(est.par2pldf$Est.Difficulty.2PL)))+scale_y_continuous(name='2PL Item Discrimination', n.breaks=10, limits=c(min(est.par2pldf$Est.Discrimination.2PL),max(est.par2pldf$Est.Discrimination.2PL)))
 			if (tt == 'flex'){
@@ -403,7 +393,7 @@ for (nit in numitems){
 			print_color('============================================================================\n','bgreen')
 			print_color('===================Comparison of Differing Scoring Methods==================\n','bgreen')
 			print_color('============================================================================\n','bgreen')
-			scoredata <- data[,c('Raw.Score','Weighted.Score','Est.ExpScore')]
+			scoredata <- data[,c('Est.Theta','Est.ExpScore','Raw.Score','Scaled.Weighted.Score')]
 			print(scoredata)
 
 			print_color('===================Estimated Expected Total v Raw Sum Score=================\n','bcyan')
@@ -420,76 +410,105 @@ for (nit in numitems){
 				ggsave(file=paste0('EstExpvRawSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
 			}
 
-			print_color('=================Estimated Expected Total v Weighted Sum Score==============\n','bcyan')
-			#Plotting estimated expected total v weighted sum score
-			ggplot(data=scoredata, mapping=aes(x=Weighted.Score,y=Est.ExpScore))+geom_point(size=2)+labs(title=paste0('Estimated Expected Score vs Weighted Score'))+scale_x_continuous(name='Weighted Score')+scale_y_continuous(name='Estimated Expected Score')
+			print_color('==============Estimated Expected Total v Scaled Weighted Sum Score==========\n','bcyan')
+			#Plotting estimated expected total v scaled weighted sum score
+			ggplot(data=scoredata, mapping=aes(x=Scaled.Weighted.Score,y=Est.ExpScore))+geom_point(size=2)+labs(title=paste0('Estimated Expected Score vs Scaled Weighted Score'))+scale_x_continuous(name='Scaled Weighted Score')+scale_y_continuous(name='Estimated Expected Score')
 			if (tt == 'flex'){
-				ggsave(file=paste0('EstExpvWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+				ggsave(file=paste0('EstExpvScaledWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
 			}else {
-				ggsave(file=paste0('EstExpvWeightSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+				ggsave(file=paste0('EstExpvScaledWeightSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
 			}
 
-			print_color('======================Weighted Sum Score v Raw Sum Score====================\n','bcyan')
-			#Plotting weighted sum score v raw sum score
-			ggplot(data=scoredata, mapping=aes(x=Raw.Score,y=Weighted.Score))+geom_point(size=2)+labs(title=paste0('Weighted Score vs Raw Score'))+scale_x_continuous(name='Raw Score')+scale_y_continuous(name='Weighted Score')
+			print_color('===================Scaled Weighted Sum Score v Raw Sum Score================\n','bcyan')
+			#Plotting scaled weighted sum score v raw sum score
+			ggplot(data=scoredata, mapping=aes(x=Raw.Score,y=Scaled.Weighted.Score))+geom_point(size=2)+labs(title=paste0('Scaled Weighted Score vs Raw Score'))+scale_x_continuous(name='Raw Score')+scale_y_continuous(name='Scaled Weighted Score')
 			if (tt == 'flex'){
-				ggsave(file=paste0('WeightSumvRawSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+				ggsave(file=paste0('ScaledWeightSumvRawSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
 			}else {
-				ggsave(file=paste0('WeightSumvRawSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+				ggsave(file=paste0('ScaledWeightSumvRawSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
 			}
 
 			#Plotting true estimated expected total vs the other two above
-			if (arg$data %in% simdata){
-				if (test == 'IRT'){
-					#Retrieving True expected test scores
-					score2plvec <- c()
-					for (th in df$Theta){
-						#Expected Test Score
-						ets <- ETS(items = Item, parameters = pardf, theta = th, est.par = FALSE)
-						score2plvec <- c(score2plvec, ets)
-					}
-					data$True.ExpScore <- score2plvec
-					scoredata$True.ExpScore <- score2plvec
+			if ((arg$data %in% simdata) & (test == 'IRT')){
+				#Retrieving True expected test scores
+				score2plvec <- c()
+				for (th in df$Theta){
+					#Expected Test Score
+					ets <- ETS(items = Item, parameters = pardf, theta = th, est.par = FALSE)
+					score2plvec <- c(score2plvec, ets)
+				}
+				scoredata$True.Theta <- df$Theta
+				data$True.ExpScore <- score2plvec
+				scoredata$True.ExpScore <- score2plvec
 
-					print_color('======================True Expected Total v Raw Sum Score===================\n','bcyan')
-					#Calculating residual sum of squares 
-					resid <- scoredata$Raw.Score - scoredata$True.ExpScore
-					SSR <- sum(resid**2)
-					print_color(paste0('The root mean square error of the true expected total vs raw sum score: ',round(sqrt((SSR/npart)),4),'\n'),'bold')
+				print_color('======================True Expected Total v Raw Sum Score===================\n','bcyan')
+				#Calculating residual sum of squares 
+				resid <- scoredata$Raw.Score - scoredata$True.ExpScore
+				SSR <- sum(resid**2)
+				print_color(paste0('The root mean square error of the true expected total vs raw sum score: ',round(sqrt((SSR/npart)),4),'\n'),'bold')
 
-					#Plotting true expected total v raw sum score
-					ggplot(data=scoredata, mapping=aes(x=Raw.Score,y=True.ExpScore))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Raw Score'))+scale_x_continuous(name='Raw Score')+scale_y_continuous(name='True Expected Score')
-					if (tt == 'flex'){
-						ggsave(file=paste0('TrueExpvRawSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
-					}else {
-						ggsave(file=paste0('TrueExpvRawSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
-					}
+				#Plotting true expected total v raw sum score
+				ggplot(data=scoredata, mapping=aes(x=Raw.Score,y=True.ExpScore))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Raw Score'))+scale_x_continuous(name='Raw Score')+scale_y_continuous(name='True Expected Score')
+				if (tt == 'flex'){
+					ggsave(file=paste0('TrueExpvRawSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+				}else {
+					ggsave(file=paste0('TrueExpvRawSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+				}
 
-					print_color('================True Expected Total v Estimated Expected Total==============\n','bcyan')
-					#Calculating residual sum of squares 
-					resid <- scoredata$Est.ExpScore - scoredata$True.ExpScore
-					SSR <- sum(resid**2)
-					print_color(paste0('The root mean square error of the true expected total vs estimated expected total: ',round(sqrt((SSR/npart)),4),'\n'),'bold')
+				print_color('================True Expected Total v Estimated Expected Total==============\n','bcyan')
+				#Calculating residual sum of squares 
+				resid <- scoredata$Est.ExpScore - scoredata$True.ExpScore
+				SSR <- sum(resid**2)
+				print_color(paste0('The root mean square error of the true expected total vs estimated expected total: ',round(sqrt((SSR/npart)),4),'\n'),'bold')
 
-					#Plotting true expected total v estimated expected total
-					ggplot(data=scoredata, mapping=aes(x=Est.ExpScore,y=True.ExpScore))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Estimated Expected Score'))+scale_x_continuous(name='Estimated Expected Score')+scale_y_continuous(name='True Expected Score')
-					if (tt == 'flex'){
-						ggsave(file=paste0('TrueExpvEstExp-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
-					}else {
-						ggsave(file=paste0('TrueExpvEstExp-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
-					}
+				#Plotting true expected total v estimated expected total
+				ggplot(data=scoredata, mapping=aes(x=Est.ExpScore,y=True.ExpScore))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Estimated Expected Score'))+scale_x_continuous(name='Estimated Expected Score')+scale_y_continuous(name='True Expected Score')
+				if (tt == 'flex'){
+					ggsave(file=paste0('TrueExpvEstExp-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+				}else {
+					ggsave(file=paste0('TrueExpvEstExp-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+				}
 
-					print_color('===================True Expected Total v Weighted Sum Score=================\n','bcyan')
-					#Plotting true expected total v weighted sum score
-					ggplot(data=scoredata, mapping=aes(x=Est.ExpScore,y=Weighted.Score))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Weighted Score'))+scale_x_continuous(name='Weighted Score')+scale_y_continuous(name='True Expected Score')
-					if (tt == 'flex'){
-						ggsave(file=paste0('TrueExpvWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
-					}else {
-						ggsave(file=paste0('TrueExpvWeightSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
-					}
-
+				print_color('===================True Expected Total v Scaled Weighted Sum Score=================\n','bcyan')
+				#Plotting true expected total v scaled weighted sum score
+				ggplot(data=scoredata, mapping=aes(x=Est.ExpScore,y=Scaled.Weighted.Score))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Scaled Weighted Score'))+scale_x_continuous(name='Scaled Weighted Score')+scale_y_continuous(name='True Expected Score')
+				if (tt == 'flex'){
+					ggsave(file=paste0('TrueExpvScaledWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+				}else {
+					ggsave(file=paste0('TrueExpvScaledWeightSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
 				}
 			}#end of IRT only loop
+
+			#Saving different scores and removing rows with infite estimated theta
+			scoreout <- scoredata %>%
+				filter(Est.Theta != Inf) %>%
+				filter(Est.Theta != -Inf)			
+			if (tt == 'flex'){
+				write.csv(scoreout, paste0('analysisout/summary/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/Scores-',paste0(name,r),'.csv'), row.names = FALSE)
+			}else {
+				write.csv(scoreout, paste0('analysisout/summary/',test,'/',tt,'/Scores-',npart,'.csv'), row.names = FALSE)
+			}
+
+			#Looking at R2 change between adding the different scores
+			print_color('=====Comparing Weighted Score and Raw Score at Predicting Estimated Theta===\n','bcyan')
+			mod1 <- lm(Est.Theta ~ Raw.Score, data = scoreout)
+			mod2 <- lm(Est.Theta ~ Scaled.Weighted.Score, data = scoreout)
+			mod3 <- lm(Est.Theta ~ Raw.Score + Scaled.Weighted.Score, data = scoreout)
+			addSWS <- summary(mod3)$r.squared - summary(mod1)$r.squared
+			addRaw <- summary(mod3)$r.squared - summary(mod2)$r.squared
+			print_color(paste0('R^2 change from adding scaled weighted score: ',round(addSWS,4),'\n'),'bviolet')
+			print_color(paste0('R^2 change from adding raw score: ',round(addRaw,4),'\n'),'bviolet')
+			
+			if ((arg$data %in% simdata) & (test == 'IRT')){
+				print_color('=======Comparing Weighted Score and Raw Score at Predicting True Theta======\n','bcyan')
+				mod4 <- lm(True.Theta ~ Raw.Score, data = scoreout)
+				mod5 <- lm(True.Theta ~ Scaled.Weighted.Score, data = scoreout)
+				mod6 <- lm(True.Theta ~ Raw.Score + Scaled.Weighted.Score, data = scoreout)
+				addSWS1 <- summary(mod6)$r.squared - summary(mod4)$r.squared
+				addRaw1 <- summary(mod6)$r.squared - summary(mod5)$r.squared
+				print_color(paste0('R^2 change from adding scaled weighted score: ',round(addSWS1,4),'\n'),'bviolet')
+				print_color(paste0('R^2 change from adding raw score: ',round(addRaw1,4),'\n'),'bviolet')
+			}	
 
 			#Make score ICCs 
 			print_color('============================================================================\n','bgreen')
@@ -557,7 +576,7 @@ for (nit in numitems){
 			#Theta parameter
 			estth <- data$Est.Theta
 			rawscore <- data$Raw.Score
-			wscore <- data$Weighted.Score
+			wscore <- data$Scaled.Weighted.Score
 			estexp <- data$Est.ExpScore
 			infindex <- which(grepl('Inf',estth))
 			
@@ -581,11 +600,11 @@ for (nit in numitems){
 			rawvestexp <- cor(newrawscore, newestexp, method = 'pearson')
 			wscorevestexp <- cor(newestexp, newwscore, method = 'pearson')
 			print_color(paste0('The pearson correlation between estimated theta and raw score: ',round(estthvraw,4),'\n'),'bold')
-			print_color(paste0('The pearson correlation between estimated theta and weighted score: ',round(estthvwscore,4),'\n'),'bold')
+			print_color(paste0('The pearson correlation between estimated theta and scaled weighted score: ',round(estthvwscore,4),'\n'),'bold')
 			print_color(paste0('The pearson correlation between estimated theta and estimated expected score: ',round(estthvestexp,4),'\n'),'bold')
-			print_color(paste0('The pearson correlation between raw score and weighted score: ',round(rawvwscore,4),'\n'),'bold')
+			print_color(paste0('The pearson correlation between raw score and scaled weighted score: ',round(rawvwscore,4),'\n'),'bold')
 			print_color(paste0('The pearson correlation between raw score and estimated expected score: ',round(rawvestexp,4),'\n'),'bold')
-			print_color(paste0('The pearson correlation between weighted score and estimated expected score: ',round(wscorevestexp,4),'\n'),'bold')
+			print_color(paste0('The pearson correlation between scaled weighted score and estimated expected score: ',round(wscorevestexp,4),'\n'),'bold')
 			
 			##############################################################################################################
 			############################CORRELATIONS BETWEEN ESTIMATED AND TRUE PARAMETERS################################
@@ -622,7 +641,7 @@ for (nit in numitems){
 					trexp <- data$True.ExpScore
 					estth <- data$Est.Theta
 					rawscore <- data$Raw.Score
-					wscore <- data$Weighted.Score
+					wscore <- data$Scaled.Weighted.Score
 					estexp <- data$Est.ExpScore
 					infindex <- which(grepl('Inf',estth))
 					
@@ -668,11 +687,11 @@ for (nit in numitems){
 					estthvraw <- cor(newrawscore, newestth, method = 'pearson')
 					print_color(paste0('The pearson correlation between true theta and estimated theta: ',round(trthvestth,4),'\n'),'bold')
 					print_color(paste0('The pearson correlation between true theta and raw score: ',round(trthvraw,4),'\n'),'bold')
-					print_color(paste0('The pearson correlation between true theta and weighted score: ',round(trthvwscore,4),'\n'),'bold')
+					print_color(paste0('The pearson correlation between true theta and scaled weighted score: ',round(trthvwscore,4),'\n'),'bold')
 					print_color(paste0('The pearson correlation between true theta and expected score: ',round(trthvestexp,4),'\n'),'bold')
 					print_color(paste0('The pearson correlation between true expected score and estimated theta: ',round(trexpvestth,4),'\n'),'bold')
 					print_color(paste0('The pearson correlation between true expected score and raw score: ',round(trexpvraw,4),'\n'),'bold')
-					print_color(paste0('The pearson correlation between true expected score and weighted score: ',round(trexpvwscore,4),'\n'),'bold')
+					print_color(paste0('The pearson correlation between true expected score and scaled weighted score: ',round(trexpvwscore,4),'\n'),'bold')
 					print_color(paste0('The pearson correlation between true expected score and expected score: ',round(trexpvestexp,4),'\n'),'bold')
 					print_color(paste0('The pearson correlation between estimated theta and raw score: ',round(estthvraw,4),'\n'),'bold')
 
