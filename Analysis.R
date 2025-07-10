@@ -414,18 +414,18 @@ for (nit in numitems){
 			#Plotting estimated expected total v scaled weighted sum score
 			ggplot(data=scoredata, mapping=aes(x=Scaled.Weighted.Score,y=Est.ExpScore))+geom_point(size=2)+labs(title=paste0('Estimated Expected Score vs Scaled Weighted Score'))+scale_x_continuous(name='Scaled Weighted Score')+scale_y_continuous(name='Estimated Expected Score')
 			if (tt == 'flex'){
-				ggsave(file=paste0('EstExpvScaledWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+				ggsave(file=paste0('EstExpvWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
 			}else {
-				ggsave(file=paste0('EstExpvScaledWeightSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+				ggsave(file=paste0('EstExpvWeightSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
 			}
 
 			print_color('===================Scaled Weighted Sum Score v Raw Sum Score================\n','bcyan')
 			#Plotting scaled weighted sum score v raw sum score
 			ggplot(data=scoredata, mapping=aes(x=Raw.Score,y=Scaled.Weighted.Score))+geom_point(size=2)+labs(title=paste0('Scaled Weighted Score vs Raw Score'))+scale_x_continuous(name='Raw Score')+scale_y_continuous(name='Scaled Weighted Score')
 			if (tt == 'flex'){
-				ggsave(file=paste0('ScaledWeightSumvRawSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+				ggsave(file=paste0('WeightSumvRawSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
 			}else {
-				ggsave(file=paste0('ScaledWeightSumvRawSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+				ggsave(file=paste0('WeightSumvRawSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
 			}
 
 			#Plotting true estimated expected total vs the other two above
@@ -473,9 +473,9 @@ for (nit in numitems){
 				#Plotting true expected total v scaled weighted sum score
 				ggplot(data=scoredata, mapping=aes(x=Est.ExpScore,y=Scaled.Weighted.Score))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Scaled Weighted Score'))+scale_x_continuous(name='Scaled Weighted Score')+scale_y_continuous(name='True Expected Score')
 				if (tt == 'flex'){
-					ggsave(file=paste0('TrueExpvScaledWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
+					ggsave(file=paste0('TrueExpvWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
 				}else {
-					ggsave(file=paste0('TrueExpvScaledWeightSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
+					ggsave(file=paste0('TrueExpvWeightSum-',npart,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
 				}
 			}#end of IRT only loop
 
