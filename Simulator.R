@@ -44,6 +44,10 @@ parser <- add_argument(parser, "--thmn", help = 'IRT theta mean when in flex mod
 parser <- add_argument(parser, "--thsd", help = 'IRT theta sd when in flex mode',nargs='*',default=c('1'))
 parser <- add_argument(parser, "--thw", help = 'IRT theta weights when in flex mode: default is eq',nargs='*',default=c('eq'))
 
+
+#TODO: FIX INCREMENT IMPLEMENTATION WITH RUN MODE
+
+
 #run mode arguments
 parser <- add_argument(parser, "--diffmninc", help = 'change in CTT difficulty mean when in run mode',nargs='*',default=c('0'))
 parser <- add_argument(parser, "--diffsdinc", help = 'change in CTT difficulty sd when in run mode',nargs='*',default=c('0'))
