@@ -26,7 +26,7 @@ parser <- add_argument(parser, "--data", help = 'data being used; options are in
 #FMCE pre & post
 #FMCE Thornton pre & post
 #
-parser <- add_argument(parser, "--name", help = 'name for sim flex dataset',nargs='*',default='TEMP')
+parser <- add_argument(parser, "--name", help = 'name for sim flex dataset',nargs='*',default='TEST')
 parser <- add_argument(parser, "--nitems", help = 'number of items being investigated: format input as begin,end,increment',nargs='*',default=c(10,10,0))
 parser <- add_argument(parser, "--ns", help = 'number of students being investigated: format input as begin,end,increment',nargs='*',default=c(1000,1000,0))
 parser <- add_argument(parser, "--run", help = 'running in run mode when TRUE',nargs='*',default=FALSE)

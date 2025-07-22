@@ -15,7 +15,7 @@ library(ggplot2)#plot related
 
 #Adding argument parsers so that I can vary the scoring analysis from the command line
 parser <- arg_parser('Options for varying the correlational analysis for a run of scoring analyses')
-parser <- add_argument(parser, "--name", help = 'name for set of runs being investigated',nargs='*',default='TEMP')
+parser <- add_argument(parser, "--name", help = 'name for set of runs being investigated',nargs='*',default='TEST')
 parser <- add_argument(parser, "--nrun", help = 'how many files in run length',nargs='*',default=10)
 parser <- add_argument(parser, "--nitems", help = 'number of items being investigated: format input as begin,end,increment',nargs='*',default=c(10,10,0))
 parser <- add_argument(parser, "--ns", help = 'number of students being investigated: format input as begin,end,increment',nargs='*',default=c(1000,1000,0))
