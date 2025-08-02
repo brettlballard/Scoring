@@ -233,13 +233,13 @@ if (arg$flex){
 		nrun <- 1
 	}
 	
-	#Keep track of different files
-	filecount <- 1
-	
 	#Build datasets
 	for (nit in numitems){
 		for (nst in numst){
 
+			#Keep track of different files
+			filecount <- 1
+	
 			#Loop over different parameter spaces
 			for (ai in 1:nrow(amndf)){
 				amn <- amndf[ai,]

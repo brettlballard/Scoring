@@ -49,7 +49,8 @@ trexpvrawscore <- c()
 trexpvwscore <- c()
 trexpvestexp <- c()
 estthvrawscore <- c()
-propgvec <- c()
+prophvec <- c()
+deldiscvec <- c()
 for (nit in numitems){
 	for (nst in nums){
 		for (r in 1:nrun){
@@ -68,36 +69,82 @@ for (nit in numitems){
 			trexpvestexp <- c(trexpvestexp,corr[(corr$Variable1 == 'True Expected Score' & corr$Variable2 == 'Estimated Expected Score'),]$Correlation)
 			estthvrawscore <- c(estthvrawscore,corr[(corr$Variable1 == 'Estimated Theta' & corr$Variable2 == 'Raw Score'),]$Correlation)
 			
+			#Collecting differences in discriminations
+			fl <- readLines(paste0('simdata/flex/IRT/',name,'/',nit,'items','/',nst,'students','/',paste0(name,r),'-Generators.txt'))
+			discmn <- fl[grepl('Discrimination Mean:',fl)]
+			discmn <- gsub('Discrimination Mean: ','',discmn)
+			discmn <- sapply(strsplit(discmn,',')[[1]], function(x) as.numeric(x))
+			deldiscvec <- c(deldiscvec,discmn[2]-discmn[1])
+
 			#Collecting the proportion of good items 
 			itemdf <- read.csv(paste0('simdata/flex/IRT/',name,'/',nit,'items','/',nst,'students','/',paste0(name,r),'-Items.csv'))
-			propg <- nrow(itemdf[itemdf$Discrimination == 3,])/nrow(itemdf)
-			propgvec <- c(propgvec,propg)
+			proph <- nrow(itemdf[itemdf$Discrimination == 3,])/nrow(itemdf)
+			prophvec <- c(prophvec,proph)
 		}
 	}
 }
 
-#TODO: Add weighted score graphs as well
-
 #Plotting correlation differences for things of interest
-pldf <- data.frame(Number.Students = nsvec, Number.Items = nitemsvec, Proportion.Good.Items = propgvec, TrueTheta.v.EstTheta = truethvestth, TrueTheta.v.RawScore = truethvrawscore, TrueTheta.v.WScore = truethvwscore, TrueTheta.v.EstExpScore = truethvestexp, TrueExpScore.v.EstTheta = trexpvestth, TrueExpScore.v.RawScore = trexpvrawscore, TrueExpScore.v.WScore = trexpvwscore, TrueExpScore.v.EstExpScore = trexpvestexp, EstTheta.v.RawScore = estthvrawscore)
+pldf <- data.frame(Number.Students = nsvec, Number.Items = nitemsvec, Proportion.High.Items = prophvec, Delta.Discrimination = deldiscvec, TrueTheta.v.EstTheta = truethvestth, TrueTheta.v.RawScore = truethvrawscore, TrueTheta.v.WScore = truethvwscore, TrueTheta.v.EstExpScore = truethvestexp, TrueExpScore.v.EstTheta = trexpvestth, TrueExpScore.v.RawScore = trexpvrawscore, TrueExpScore.v.WScore = trexpvwscore, TrueExpScore.v.EstExpScore = trexpvestexp, EstTheta.v.RawScore = estthvrawscore)
 
-pldf$Proportion.Good.Items <- sapply(pldf$Proportion.Good.Items, function(x) round(x,2))
+pldf$Proportion.High.Items <- sapply(pldf$Proportion.High.Items, function(x) round(x,2))
 
 #Make columns to plot
 pldf <- pldf %>%
 	mutate(Abs.Difference1 = TrueTheta.v.EstExpScore - TrueTheta.v.RawScore) %>%
-	mutate(Abs.Difference2 = TrueExpScore.v.EstExpScore - TrueExpScore.v.RawScore)
+	mutate(Abs.Difference2 = TrueExpScore.v.EstExpScore - TrueExpScore.v.RawScore) %>%
+	mutate(Abs.Difference3 = TrueTheta.v.WScore - TrueTheta.v.RawScore) %>%
+	mutate(Abs.Difference4 = TrueExpScore.v.WScore - TrueExpScore.v.RawScore) %>%
+	mutate(Abs.Difference5 = TrueTheta.v.EstExpScore - TrueTheta.v.EstTheta) %>%
+	mutate(Abs.Difference6 = TrueExpScore.v.EstExpScore - TrueExpScore.v.EstTheta) %>%
+	print()
 
-print(pldf)
-
+#Plotting correlational differences as a function of number of items
 if (arg$ns[3] == 0 & arg$nitems[3] != 0){
 	if (!dir.exists(paste0('corrout/flex/IRT/',name,'/IncItems/',nst,'students','/'))){dir.create(paste0('corrout/flex/IRT/',name,'/IncItems/',nst,'students','/'), recursive = TRUE)}
 	if (arg$nitems[3] != 0){
-		ggplot(data=pldf, mapping=aes(x=Number.Items,y=Proportion.Good.Items))+geom_point(size=1,aes(colour=Abs.Difference1))+scale_colour_gradient2()+labs(title=paste0('Absolute Difference in Correlations Between True Theta\n and Raw Score or 2PL Expected Score'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(arg$nitems[1]-arg$nitems[3],arg$nitems[2]+arg$nitems[3]))+scale_y_continuous(name='Proportion of Good Items', n.breaks=10)
-		ggsave(file=paste0('AbsDiff-TrueThetavRawExpScore.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncItems/',nst,'students','/'))
+		ggplot(data=pldf, mapping=aes(x=Number.Items,y=Abs.Difference1))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(arg$nitems[1]-arg$nitems[3],arg$nitems[2]+arg$nitems[3]))+scale_y_continuous(name='True Theta:Estimated Expected Score - True Theta:Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueThetavEstExpRawScore.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncItems/',nst,'students','/'))
 
-		ggplot(data=pldf, mapping=aes(x=Number.Items,y=Abs.Difference2))+geom_point(size=1,aes(colour = Proportion.Good.Items))+labs(title=paste0('Absolute Difference in Correlations Between True Expected Score\n and Raw Score or 2PL Expected Score'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(arg$nitems[1]-arg$nitems[3],arg$nitems[2]+arg$nitems[3]))+scale_y_continuous(name='Abosulte Difference', n.breaks=10)
-		ggsave(file=paste0('AbsDiff-TrueExpvRawExpScore.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncItems/',nst,'students','/'))
+		ggplot(data=pldf, mapping=aes(x=Number.Items,y=Abs.Difference2))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(arg$nitems[1]-arg$nitems[3],arg$nitems[2]+arg$nitems[3]))+scale_y_continuous(name='True Expected Score:Estimated Expected Score - True Expected Score:Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueExpvEstExpRawScore.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncItems/',nst,'students','/'))
+		
+		ggplot(data=pldf, mapping=aes(x=Number.Items,y=Abs.Difference3))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(arg$nitems[1]-arg$nitems[3],arg$nitems[2]+arg$nitems[3]))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueThetavWeightRawScore.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncItems/',nst,'students','/'))
+
+		ggplot(data=pldf, mapping=aes(x=Number.Items,y=Abs.Difference4))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(arg$nitems[1]-arg$nitems[3],arg$nitems[2]+arg$nitems[3]))+scale_y_continuous(name='True Expected Score:Weighted Score - True Expected Score:Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueExpvWeightRawScore.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncItems/',nst,'students','/'))
+		
+		ggplot(data=pldf, mapping=aes(x=Number.Items,y=Abs.Difference5))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(arg$nitems[1]-arg$nitems[3],arg$nitems[2]+arg$nitems[3]))+scale_y_continuous(name='True Theta:Estimated Expected Score - True Theta:Estimated Theta', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueThetavEstExpScoreEstTheta.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncItems/',nst,'students','/'))
+
+		ggplot(data=pldf, mapping=aes(x=Number.Items,y=Abs.Difference6))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(arg$nitems[1]-arg$nitems[3],arg$nitems[2]+arg$nitems[3]))+scale_y_continuous(name='True Expected Score:Estimated Expected Score - True Expected Score:Estimated Theta', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueExpvEstExpScoreEstTheta.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncItems/',nst,'students','/'))
+	}
+}
+
+#Plotting correlational differences as a function of discrimination difference for different number of items
+if (length(unique(pldf$Delta.Discrimination)) > 1){
+	for (nit in unique(pldf$Number.Items)){
+		if (!dir.exists(paste0('corrout/flex/IRT/',name,'/IncDisc/',nit,'items','/',nst,'students','/'))){dir.create(paste0('corrout/flex/IRT/',name,'/IncDisc/',nit,'items','/',nst,'students','/'), recursive = TRUE)}
+
+		ggplot(data=pldf, mapping=aes(x=Delta.Discrimination,y=Abs.Difference1))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations For ',nit,' Items'))+scale_x_continuous(name='Difference Between High and Low Discrimination', n.breaks=10, limits=c(min(pldf$Delta.Discrimination)-.1,max(pldf$Delta.Discrimination)+.1))+scale_y_continuous(name='True Theta:Estimated Expected Score - True Theta:Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueThetavEstExpRawScore.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncDisc/',nit,'items','/',nst,'students','/'))
+
+		ggplot(data=pldf, mapping=aes(x=Delta.Discrimination,y=Abs.Difference2))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations For ',nit,' Items'))+scale_x_continuous(name='Difference Between High and Low Discrimination', n.breaks=10, limits=c(min(pldf$Delta.Discrimination)-.1,max(pldf$Delta.Discrimination)+.1))+scale_y_continuous(name='True Expected Score:Estimated Expected Score - True Expected Score:Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueExpvEstExpRawScore.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncDisc/',nit,'items','/',nst,'students','/'))
+		
+		ggplot(data=pldf, mapping=aes(x=Delta.Discrimination,y=Abs.Difference3))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations For ',nit,' Items'))+scale_x_continuous(name='Difference Between High and Low Discrimination', n.breaks=10, limits=c(min(pldf$Delta.Discrimination)-.1,max(pldf$Delta.Discrimination)+.1))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueThetavWeightRawScore.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncDisc/',nit,'items','/',nst,'students','/'))
+
+		ggplot(data=pldf, mapping=aes(x=Delta.Discrimination,y=Abs.Difference4))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations For ',nit,' Items'))+scale_x_continuous(name='Difference Between High and Low Discrimination', n.breaks=10, limits=c(min(pldf$Delta.Discrimination)-.1,max(pldf$Delta.Discrimination)+.1))+scale_y_continuous(name='True Expected Score:Weighted Score - True Expected Score:Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueExpvWeightRawScore.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncDisc/',nit,'items','/',nst,'students','/'))
+			
+		ggplot(data=pldf, mapping=aes(x=Delta.Discrimination,y=Abs.Difference5))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations For ',nit,' Items'))+scale_x_continuous(name='Difference Between High and Low Discrimination', n.breaks=10, limits=c(min(pldf$Delta.Discrimination)-.1,max(pldf$Delta.Discrimination)+.1))+scale_y_continuous(name='True Theta:Estimated Expected Score - True Theta:Estimated Theta', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueThetavEstExpScoreEstTheta.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncDisc/',nit,'items','/',nst,'students','/'))
+
+		ggplot(data=pldf, mapping=aes(x=Delta.Discrimination,y=Abs.Difference6))+geom_point(size=1,aes(colour=Proportion.High.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations For ',nit,' Items'))+scale_x_continuous(name='Difference Between High and Low Discrimination', n.breaks=10, limits=c(min(pldf$Delta.Discrimination)-.1,max(pldf$Delta.Discrimination)+.1))+scale_y_continuous(name='True Expected Score:Estimated Expected Score - True Expected Score:Estimated Theta', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+		ggsave(file=paste0('DiffCorr-TrueExpvEstExpScoreEstTheta.pdf'), path=paste0('corrout/flex/IRT/',name,'/IncDisc/',nit,'items','/',nst,'students','/'))
 	}
 }
 
