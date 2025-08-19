@@ -75,177 +75,165 @@ response <- function(g,itempar,th=0){
 ###############################################################################################################
 #Simulating data 
 #Flexible simulations based on user input
-if (arg$flex){
-	#If multiple runs of the same set of items or students, but with potentially varying parameters
-	if (arg$run){
-		nrun <- arg$nrun
-	}else {
-		nrun <- 1
-	}
-	
-	#Keep track of different files
-	filecount <- 1
-	
-	#Build datasets
-	for (nit in numitems){
-		for (nst in numst){
-			#Generate data
-			for (r in 1:nrun){
-				#Setting incremented values
-				nitems <- nit
-				Item <- paste0('Item',1:nitems)
-				ns <- nst
-				
-				#Changing shapes of IRT parameter distributions
-				if (arg$shape == 'NULL'){
-					bmn = c(-1.5,0,1.5)
-					bsd = c(.5,1,.5)
-					bw = c(.25,.5,.25)
-					itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
-					amn = c(1,2,3)
-					asd = c(.5,.5,.5)
-					aw = c(.6,.3,.1)
-					itemdisc <- multirnorm(nitems, mean=amn, sd=asd, w=aw)
-				}else if (arg$shape == 'LIN'){
-					bmn = c(-1.5,0,1.5)
-					bsd = c(.5,1,.5)
-					bw = c(.25,.5,.25)
-					itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
+#If multiple runs of the same set of items or students, but with potentially varying parameters
+if (arg$run){
+	nrun <- arg$nrun
+}else {
+	nrun <- 1
+}
+
+#Keep track of different files
+filecount <- 1
+
+#Build datasets
+for (nit in numitems){
+	for (nst in numst){
+		#Generate data
+		for (r in 1:nrun){
+			#Setting incremented values
+			nitems <- nit
+			Item <- paste0('Item',1:nitems)
+			ns <- nst
+			
+			#Changing shapes of IRT parameter distributions
+			if (arg$shape == 'NONE'){
+				bmn = c(-1.5,0,1.5)
+				bsd = c(.5,1,.5)
+				bw = c(.25,.5,.25)
+				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
+				amn = c(1,2,3)
+				asd = c(.5,.5,.5)
+				aw = c(.6,.3,.1)
+				itemdisc <- multirnorm(nitems, mean=amn, sd=asd, w=aw)
+			}else if ('LIN' %in% arg$shape){
+				bmn = c(-1.5,0,1.5)
+				bsd = c(.5,1,.5)
+				bw = c(.25,.5,.25)
+				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
+				if ('n' %in% arg$shape){
+					formula <- 'Disc = -1 * Diff + 1.5'
+					itemdisc <- -1 * itemdiff + 1.5
+				}else {
 					formula <- 'Disc = 1 * Diff + 1.5'
 					itemdisc <- 1 * itemdiff + 1.5
-				}else if (arg$shape == 'EXPg'){
-					bmn = c(-1.5,0,1.5)
-					bsd = c(.5,1,.5)
-					bw = c(.25,.5,.25)
-					itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
+				}
+			}else if ('EXP' %in% arg$shape){
+				bmn = c(-1.5,0,1.5)
+				bsd = c(.5,1,.5)
+				bw = c(.25,.5,.25)
+				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
+				if ('d' %in% arg$shape){
+					cut <- -2
+				}else {
 					cut <- 2
-					amn = c(1,2.5)
-					asd = c(.25,1)
-					aw = c('eq')
-					itemdisc <- c()
-					for (diff in itemdiff){
-						if (diff > cut){
-							disc <- multirnorm(nitems, mean=amn[2], sd=asd[2], w=aw)
+				}
+				amn = c(1,2.5)
+				asd = c(.15,.5)
+				aw = c('eq')
+				itemdisc <- c()
+				for (diff in itemdiff){
+					if ('d' %in% arg$shape){
+						if (diff < cut){
+							disc <- multirnorm(1, mean=amn[2], sd=asd[2], w=aw)
 						}else {
+							disc <- multirnorm(1, mean=amn[1], sd=asd[1], w=aw)
 						}
-						itemdisc <- c(itemdisc,disc)
+					}else {
+						if (diff > cut){
+							disc <- multirnorm(1, mean=amn[2], sd=asd[2], w=aw)
+						}else {
+							disc <- multirnorm(1, mean=amn[1], sd=asd[1], w=aw)
+						}
 					}
-				}else if (arg$shape == 'EXPd'){
-					bmn = c(-1.5,0,1.5)
-					bsd = c(.5,1,.5)
-					bw = c(.25,.5,.25)
-					itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
-				}else if (arg$shape == 'LN'){
-					bmn = c(-1.5,0,1.5)
-					bsd = c(.5,1,.5)
-					bw = c(.25,.5,.25)
-					itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
+					itemdisc <- c(itemdisc,disc)
 				}
-
-				#Saving item generators
-				if (!dir.exists(paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students'))){dir.create(paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students'), recursive = TRUE)}
-				gen <- file(paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students','/',paste0(arg$name,filecount),'-Generators.txt'), 'w')
-				writeLines(paste0('Number of Items: ',nitems), con = gen)
-				writeLines(paste0('Number of Students: ',ns), con = gen)
-				writeLines(paste0('Parameter Distribution Type: ',arg$pardist), con = gen)
-				writeLines(paste0('Difficulty Mean: ',paste0(bmn,collapse=',')), con = gen)
-				writeLines(paste0('Difficulty Standard Deviation: ',paste0(bsd,collapse=',')), con = gen)
-				writeLines(paste0('Difficulty Weighting: ',paste0(bw,collapse=',')), con = gen)
-				if (arg$shape == 'NULL'){
-					writeLines(paste0('Discrimination Mean: ',paste0(amn,collapse=',')), con = gen)
-					writeLines(paste0('Discrimination Standard Deviation: ',paste0(asd,collapse=',')), con = gen)
-					writeLines(paste0('Discrimination Weighting: ',paste0(aw,collapse=',')), con = gen)
-				}else if (arg$shape == 'LIN'){
-					writeLines(paste0('Discrimination Formula: ',formula), con = gen)
-				}else (){
+			}else if ('LN' %in% arg$shape){
+				bmn = c(-1.5,0,1.5)
+				bsd = c(.5,1,.5)
+				bw = c(.25,.5,.25)
+				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
+				if ('r' %in% arg$shape){
+					cut <- 2
+				}else {
+					cut <- -2
 				}
-				writeLines(paste0('Theta Mean: ',paste0(thmn,collapse=',')), con = gen)
-				writeLines(paste0('Theta Standard Deviation: ',paste0(thsd,collapse=',')), con = gen)
-				writeLines(paste0('Theta Weighting: ',paste0(thw,collapse=',')), con = gen)
-				close(gen)
-
-				#True item parameters that will be used in the generated data
-				par <- data.frame(Items = Item, Difficulty = itemdiff, Discrimination = itemdisc)
-				print_color(paste0('==============================================================================\n'),'bold')
-				print_color(paste0('==============================Item Parameters=================================\n'),'bold')
-				print_color(paste0('==============================================================================\n'),'bold')
-				print(par)
-				write.csv(par, paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students','/',paste0(arg$name,filecount),'-Items.csv'), row.names = FALSE)	
-
-				#Setting true proficiencies
-				df <- data.frame(ID = 1:ns, Theta = multirnorm(ns, mean=arg$thmn, sd=arg$thsd, w=arg$thw))
-
-				#Fill in student responses 
-				print_color(paste0('==============================================================================\n'),'bcyan')
-				print_color(paste0('========================Generating Student Responses==========================\n'),'bcyan')
-				print_color(paste0('==============================================================================\n'),'bcyan')
-				for (j in Item){
-					temp <- c()
-					
-					for (i in 1:ns){
-						resp <- response(g='IRT', itempar=par[par$Items == j,], th=df[df$ID == i,]$Theta)
-						temp <- c(temp, resp)
+				amn = c(3,1.5)
+				asd = c(.15,.5)
+				aw = c('eq')
+				itemdisc <- c()
+				for (diff in itemdiff){
+					if ('r' %in% arg$shape){
+						if (diff > cut){
+							disc <- multirnorm(1, mean=amn[2], sd=asd[2], w=aw)
+						}else {
+							disc <- multirnorm(1, mean=amn[1], sd=asd[1], w=aw)
+						}
+					}else {
+						if (diff < cut){
+							disc <- multirnorm(1, mean=amn[2], sd=asd[2], w=aw)
+						}else {
+							disc <- multirnorm(1, mean=amn[1], sd=asd[1], w=aw)
+						}
 					}
-					df[[j]] <- temp
+					itemdisc <- c(itemdisc,disc)
 				}
-				print(as_tibble(df))
+			}
+
+			#Saving item generators
+			if (!dir.exists(paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students'))){dir.create(paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students'), recursive = TRUE)}
+			gen <- file(paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students','/',paste0(arg$name,filecount),'-Generators.txt'), 'w')
+			writeLines(paste0('Number of Items: ',nitems), con = gen)
+			writeLines(paste0('Number of Students: ',ns), con = gen)
+			writeLines(paste0('Parameter Distribution Type: ',arg$pardist), con = gen)
+			writeLines(paste0('Difficulty Mean: ',paste0(bmn,collapse=',')), con = gen)
+			writeLines(paste0('Difficulty Standard Deviation: ',paste0(bsd,collapse=',')), con = gen)
+			writeLines(paste0('Difficulty Weighting: ',paste0(bw,collapse=',')), con = gen)
+			if (arg$shape == 'NULL'){
+				writeLines(paste0('Discrimination Mean: ',paste0(amn,collapse=',')), con = gen)
+				writeLines(paste0('Discrimination Standard Deviation: ',paste0(asd,collapse=',')), con = gen)
+				writeLines(paste0('Discrimination Weighting: ',paste0(aw,collapse=',')), con = gen)
+			}else if ('LIN' %in% arg$shape){
+				writeLines(paste0('Discrimination Formula: ',formula), con = gen)
+			}else ('EXP' %in% arg$shape | 'LN' %in% arg%shape){
+				writeLines(paste0('Cut value used: ',cut), con = gen)
+			}
+			writeLines(paste0('Theta Mean: ',paste0(thmn,collapse=',')), con = gen)
+			writeLines(paste0('Theta Standard Deviation: ',paste0(thsd,collapse=',')), con = gen)
+			writeLines(paste0('Theta Weighting: ',paste0(thw,collapse=',')), con = gen)
+			close(gen)
+
+			#True item parameters that will be used in the generated data
+			par <- data.frame(Items = Item, Difficulty = itemdiff, Discrimination = itemdisc)
+			print_color(paste0('==============================================================================\n'),'bold')
+			print_color(paste0('==============================Item Parameters=================================\n'),'bold')
+			print_color(paste0('==============================================================================\n'),'bold')
+			print(par)
+			write.csv(par, paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students','/',paste0(arg$name,filecount),'-Items.csv'), row.names = FALSE)	
+
+			#Setting true proficiencies
+			df <- data.frame(ID = 1:ns, Theta = multirnorm(ns, mean=arg$thmn, sd=arg$thsd, w=arg$thw))
+
+			#Fill in student responses 
+			print_color(paste0('==============================================================================\n'),'bcyan')
+			print_color(paste0('========================Generating Student Responses==========================\n'),'bcyan')
+			print_color(paste0('==============================================================================\n'),'bcyan')
+			for (j in Item){
+				temp <- c()
 				
-				#Saving flex datasets
-				write.csv(df, paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students','/',paste0(arg$name,filecount),'-Data.csv'), row.names = FALSE)
-				filecount <- filecount + 1
-			}#end of nrun loop
-		}#end of ns loop
-	}#end of nitems loop
-
-}else {
-	#Generating massive datasets that are fixed
-	nitems <- 100
-	Item <- paste0('Item',1:nitems)
-	ns <- 10000
-
-	#True item parameters that will be used in the generated data
-	set.seed(328)#consistent item parameters when run
-	irtdiff <- rnorm(nitems, mean=0, sd=1)
-	irtdisc <- rnorm(nitems, mean=1.5, sd=.5)
-
-	print_color(paste0('==============================================================================\n'),'bold')
-	print_color(paste0('============================IRT Item Parameters===============================\n'),'bold')
-	print_color(paste0('==============================================================================\n'),'bold')
-	irtpar <- data.frame(Items = Item, Difficulty = irtdiff, Discrimination = irtdisc)
-	print(irtpar)	
-	write.csv(irtpar, paste0('simdata/fixed/IRT-Items.csv'), row.names = FALSE)	
-
-	#Setting true proficiencies 
-	set.seed(326)#consistent proficiencies when run
-	irtdf <- data.frame(ID = 1:ns, Theta = rnorm(ns, mean=0, sd=1))
-
-	#Because there are a lot of responses, then I want to output progress
-	itprogress <- seq(1, nitems, by = nitems/10)
-	itprogress <- paste0('Item',itprogress)
-
-	#Fill in student responses 
-	print_color(paste0('==============================================================================\n'),'bcyan')
-	print_color(paste0('========================Generating Student Responses==========================\n'),'bcyan')
-	print_color(paste0('==============================================================================\n'),'bcyan')
-	for (j in Item){
-		if (j %in% itprogress){
-			prog <- which(itprogress == j)
-			print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!',(prog*10),'% DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-		}
-
-		irttemp <- c()
-
-		for (i in 1:ns){
-			irtr <- response(g='IRT', itempar=irtpar[irtpar$Items == j,], mod=irtdf[irtdf$ID == i,]$Theta)
-			irttemp <- c(irttemp, irtr)
-		}
-		irtdf[[j]] <- irttemp
-	}
-	print(as_tibble(irtdf))
-
-	#Saving fixed datasets 
-	write.csv(irtdf, paste0('simdata/fixed/IRT-Data.csv'), row.names = FALSE)	
-}
+				for (i in 1:ns){
+					resp <- response(g='IRT', itempar=par[par$Items == j,], th=df[df$ID == i,]$Theta)
+					temp <- c(temp, resp)
+				}
+				df[[j]] <- temp
+			}
+			print(as_tibble(df))
+			
+			#Saving flex datasets
+			write.csv(df, paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students','/',paste0(arg$name,filecount),'-Data.csv'), row.names = FALSE)
+			filecount <- filecount + 1
+		}#end of nrun loop
+	}#end of ns loop
+}#end of nitems loop
 
 #Curious about runtime 
 end <- Sys.time()
