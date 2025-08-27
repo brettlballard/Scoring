@@ -1,10 +1,10 @@
 "Variable1","Variable2","Correlation"
-"True Theta","Estimated Theta",0.857661084872779
-"True Theta","Raw Score",0.739728302166718
-"True Theta","Weighted Score",0.852348777251967
-"True Theta","Estimated Expected Score",0.865731886916822
-"True Expected Score","Estimated Theta",0.864001201543785
-"True Expected Score","Raw Score",0.750212799688852
-"True Expected Score","Weighted Score",0.875852144937307
-"True Expected Score","Estimated Expected Score",0.880432483040898
-"Estimated Theta","Raw Score",0.863924355135185
+"True Theta","Estimated Theta",0.904142034634228
+"True Theta","Raw Score",0.874978693824621
+"True Theta","Weighted Score",0.922716381293015
+"True Theta","Estimated Expected Score",0.937796028167027
+"True Expected Score","Estimated Theta",0.881317055504164
+"True Expected Score","Raw Score",0.892292559760318
+"True Expected Score","Weighted Score",0.959442268071163
+"True Expected Score","Estimated Expected Score",0.955130773277741
+"Estimated Theta","Raw Score",0.892020467786005

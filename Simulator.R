@@ -293,7 +293,7 @@ if (arg$flex){
 													write.csv(par, paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students','/',paste0(arg$name,filecount),'-Items.csv'), row.names = FALSE)	
 
 													#Setting true proficiencies
-													df <- data.frame(ID = 1:ns, Theta = multirnorm(ns, mean=arg$thmn, sd=arg$thsd, w=arg$thw))
+													df <- data.frame(ID = 1:ns, Theta = multirnorm(ns, mean=thmn, sd=thsd, w=thw))
 
 													#Fill in student responses 
 													print_color(paste0('==============================================================================\n'),'bcyan')

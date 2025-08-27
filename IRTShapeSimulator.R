@@ -13,7 +13,6 @@ source('src/MultiPDF.R')#use of multiple random pdfs
 
 #Adding argument parsers so that I can vary the simulated data from the command line
 parser <- arg_parser('Options for varying the simulated data generated')
-parser <- add_argument(parser, "--flex", help = 'running in flex mode when TRUE',nargs='*',default=TRUE)
 parser <- add_argument(parser, "--run", help = 'running in run mode when TRUE',nargs='*',default=FALSE)
 parser <- add_argument(parser, "--nrun", help = 'number of runs when in run mode',nargs='*',default=10)
 parser <- add_argument(parser, "--name", help = 'name of output when in flex/run mode if other name desired',nargs='*',default='TEST')
@@ -22,11 +21,7 @@ parser <- add_argument(parser, "--shape", help = 'shape between difficulty and d
 #flex mode arguments
 parser <- add_argument(parser, "--nitems", help = 'number of items when in flex mode: format input as begin,end,increment',nargs='*',default=c(10,10,0))
 parser <- add_argument(parser, "--ns", help = 'number of students when in flex mode: format input as begin,end,increment',nargs='*',default=c(1000,1000,0))
-parser <- add_argument(parser, "--thmn", help = 'IRT theta mean when in flex mode',nargs='*',default=c(0,0,0))
-parser <- add_argument(parser, "--thsd", help = 'IRT theta sd when in flex mode',nargs='*',default=c(1,1,0))
-parser <- add_argument(parser, "--thw", help = 'IRT theta weights when in flex mode',nargs='*',default=c('eq'))
 parser <- add_argument(parser, "--pardist", help = 'parameter distribution type when in flex mode, options are norm and unif: default is norm',nargs='*',default='norm')
-
 arg <- parse_args(parser)
 
 #Turning multiple input arguments into vectors
@@ -34,11 +29,7 @@ numitems <- seq(from = arg$nitems[1], to = arg$nitems[2], by = arg$nitems[3])
 numst <- seq(from = arg$ns[1], to = arg$ns[2], by = arg$ns[3])
 
 #Running checks on user input
-if (arg$flex){
-	print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING FLEX MODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-}else {
-	print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING FIXED MODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-}
+print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING FLEX MODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 
 #Running checks on user input
 if (arg$run){
@@ -82,33 +73,37 @@ if (arg$run){
 	nrun <- 1
 }
 
-#Keep track of different files
-filecount <- 1
-
 #Build datasets
 for (nit in numitems){
 	for (nst in numst){
+		
+		#Keep track of different files
+		filecount <- 1
+
 		#Generate data
 		for (r in 1:nrun){
 			#Setting incremented values
 			nitems <- nit
 			Item <- paste0('Item',1:nitems)
 			ns <- nst
+			thmn <- c(0)
+			thsd <- c(1)
+			thw <- c('eq')
 			
 			#Changing shapes of IRT parameter distributions
 			if (arg$shape == 'NONE'){
-				bmn = c(-1.5,0,1.5)
-				bsd = c(.5,1,.5)
-				bw = c(.25,.5,.25)
+				bmn <- c(-1.5,0,1.5)
+				bsd <- c(.5,1,.5)
+				bw <- c(.25,.5,.25)
 				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
-				amn = c(1,2,3)
-				asd = c(.5,.5,.5)
-				aw = c(.6,.3,.1)
+				amn <- c(1,2,3)
+				asd <- c(.5,.5,.5)
+				aw <- c(.6,.3,.1)
 				itemdisc <- multirnorm(nitems, mean=amn, sd=asd, w=aw)
 			}else if ('LIN' %in% arg$shape){
-				bmn = c(-1.5,0,1.5)
-				bsd = c(.5,1,.5)
-				bw = c(.25,.5,.25)
+				bmn <- c(-1.5,0,1.5)
+				bsd <- c(.5,1,.5)
+				bw <- c(.25,.5,.25)
 				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
 				if ('n' %in% arg$shape){
 					formula <- 'Disc = -1 * Diff + 1.5'
@@ -117,19 +112,45 @@ for (nit in numitems){
 					formula <- 'Disc = 1 * Diff + 1.5'
 					itemdisc <- 1 * itemdiff + 1.5
 				}
+			}else if ('GAUSS' %in% arg$shape){
+				bmn <- c(-1.5,0,1.5)
+				bsd <- c(.5,1,.5)
+				bw <- c(.25,.5,.25)
+				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
+				bounds <- c(-1.5,1.5)
+				amn <- c(1,2.5,3,1.5)
+				asd <- c(.15,.5,.15,.5)
+				aw <- c('eq')
+				itemdisc <- c()
+				for (diff in itemdiff){
+					if ('i' %in% arg$shape){
+						if (bounds[1] < diff & diff < bounds[2]){
+							disc <- multirnorm(1, mean=amn[4], sd=asd[4], w=aw)
+						}else {
+							disc <- multirnorm(1, mean=amn[3], sd=asd[3], w=aw)
+						}
+					}else {
+						if (bounds[1] < diff & diff < bounds[2]){
+							disc <- multirnorm(1, mean=amn[2], sd=asd[2], w=aw)
+						}else {
+							disc <- multirnorm(1, mean=amn[1], sd=asd[1], w=aw)
+						}
+					}
+					itemdisc <- c(itemdisc,disc)
+				}
 			}else if ('EXP' %in% arg$shape){
-				bmn = c(-1.5,0,1.5)
-				bsd = c(.5,1,.5)
-				bw = c(.25,.5,.25)
+				bmn <- c(-1.5,0,1.5)
+				bsd <- c(.5,1,.5)
+				bw <- c(.25,.5,.25)
 				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
 				if ('d' %in% arg$shape){
 					cut <- -2
 				}else {
 					cut <- 2
 				}
-				amn = c(1,2.5)
-				asd = c(.15,.5)
-				aw = c('eq')
+				amn <- c(1,2.5)
+				asd <- c(.15,.5)
+				aw <- c('eq')
 				itemdisc <- c()
 				for (diff in itemdiff){
 					if ('d' %in% arg$shape){
@@ -147,19 +168,19 @@ for (nit in numitems){
 					}
 					itemdisc <- c(itemdisc,disc)
 				}
-			}else if ('LN' %in% arg$shape){
-				bmn = c(-1.5,0,1.5)
-				bsd = c(.5,1,.5)
-				bw = c(.25,.5,.25)
+			}else if ('LOG' %in% arg$shape){
+				bmn <- c(-1.5,0,1.5)
+				bsd <- c(.5,1,.5)
+				bw <- c(.25,.5,.25)
 				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
 				if ('r' %in% arg$shape){
 					cut <- 2
 				}else {
 					cut <- -2
 				}
-				amn = c(3,1.5)
-				asd = c(.15,.5)
-				aw = c('eq')
+				amn <- c(3,1.5)
+				asd <- c(.15,.5)
+				aw <- c('eq')
 				itemdisc <- c()
 				for (diff in itemdiff){
 					if ('r' %in% arg$shape){
@@ -194,7 +215,9 @@ for (nit in numitems){
 				writeLines(paste0('Discrimination Weighting: ',paste0(aw,collapse=',')), con = gen)
 			}else if ('LIN' %in% arg$shape){
 				writeLines(paste0('Discrimination Formula: ',formula), con = gen)
-			}else ('EXP' %in% arg$shape | 'LN' %in% arg%shape){
+			}else if ('GAUSS' %in% arg$shape){
+				writeLines(paste0('Bounds used: ',bounds), con = gen)
+			}else if ('EXP' %in% arg$shape | 'LOG' %in% arg$shape){
 				writeLines(paste0('Cut value used: ',cut), con = gen)
 			}
 			writeLines(paste0('Theta Mean: ',paste0(thmn,collapse=',')), con = gen)
@@ -211,7 +234,7 @@ for (nit in numitems){
 			write.csv(par, paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students','/',paste0(arg$name,filecount),'-Items.csv'), row.names = FALSE)	
 
 			#Setting true proficiencies
-			df <- data.frame(ID = 1:ns, Theta = multirnorm(ns, mean=arg$thmn, sd=arg$thsd, w=arg$thw))
+			df <- data.frame(ID = 1:ns, Theta = multirnorm(ns, mean=thmn, sd=thsd, w=thw))
 
 			#Fill in student responses 
 			print_color(paste0('==============================================================================\n'),'bcyan')

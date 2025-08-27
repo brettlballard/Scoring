@@ -1,9 +1,9 @@
 "DV","AddVariable","Delta.R2"
-"Estimated Theta","Raw Score",0.213339310945103
-"Estimated Theta","Weighted Score",0.0731106243359704
-"Estimated Expected Score","Raw Score",0.0915664507887237
-"Estimated Expected Score","Weighted Score",0.300198084375278
-"True Theta","Raw Score",0.0277300657986026
-"True Theta","Weighted Score",0.162088413995527
-"True Expected Score","Raw Score",0.0213375806508675
-"True Expected Score","Weighted Score",0.230213122280065
+"Estimated Theta","Raw Score",0.0289530847922431
+"Estimated Theta","Weighted Score",0.0186372723935199
+"Estimated Expected Score","Raw Score",0.000662261244115281
+"Estimated Expected Score","Weighted Score",0.146726493342395
+"True Theta","Raw Score",0.000158232360504607
+"True Theta","Weighted Score",0.138001397584975
+"True Expected Score","Raw Score",0.000118737804600588
+"True Expected Score","Weighted Score",0.146536749938959
