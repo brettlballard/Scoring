@@ -82,6 +82,10 @@ for (nit in numitems){
 
 		#Generate data
 		for (r in 1:nrun){
+			print_color(paste0('==============================================================================\n'),'bviolet')
+			print_color(paste0('===============================RUN NUMBER ',r,'===================================\n'),'bviolet')
+			print_color(paste0('==============================================================================\n'),'bviolet')
+			
 			#Setting incremented values
 			nitems <- nit
 			Item <- paste0('Item',1:nitems)
@@ -100,19 +104,26 @@ for (nit in numitems){
 				asd <- c(.5,.5,.5)
 				aw <- c(.6,.3,.1)
 				itemdisc <- multirnorm(nitems, mean=amn, sd=asd, w=aw)
-			}else if ('LIN' %in% arg$shape){
+			}else if (grepl('LIN',arg$shape)){
 				bmn <- c(-1.5,0,1.5)
 				bsd <- c(.5,1,.5)
 				bw <- c(.25,.5,.25)
-				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
-				if ('n' %in% arg$shape){
-					formula <- 'Disc = -1 * Diff + 1.5'
-					itemdisc <- -1 * itemdiff + 1.5
-				}else {
-					formula <- 'Disc = 1 * Diff + 1.5'
-					itemdisc <- 1 * itemdiff + 1.5
+				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)	
+				asd <- c(.15)
+				aw <- c('eq')
+				itemdisc <- c()
+				for (diff in itemdiff){
+					if (grepl('n',arg$shape)){
+						formula <- 'Disc = -1 * Diff + 1.5'
+						amn <- -1 * diff + 1.5
+					}else {
+						formula <- 'Disc = 1 * Diff + 1.5'
+						amn <- 1 * diff + 1.5
+					}
+					disc <- multirnorm(1, mean=amn, sd=asd, w=aw)
+					itemdisc <- c(itemdisc,disc)
 				}
-			}else if ('GAUSS' %in% arg$shape){
+			}else if (grepl('GAUSS',arg$shape)){
 				bmn <- c(-1.5,0,1.5)
 				bsd <- c(.5,1,.5)
 				bw <- c(.25,.5,.25)
@@ -123,7 +134,7 @@ for (nit in numitems){
 				aw <- c('eq')
 				itemdisc <- c()
 				for (diff in itemdiff){
-					if ('i' %in% arg$shape){
+					if (grepl('i',arg$shape)){
 						if (bounds[1] < diff & diff < bounds[2]){
 							disc <- multirnorm(1, mean=amn[4], sd=asd[4], w=aw)
 						}else {
@@ -138,22 +149,22 @@ for (nit in numitems){
 					}
 					itemdisc <- c(itemdisc,disc)
 				}
-			}else if ('EXP' %in% arg$shape){
+			}else if (grepl('EXP',arg$shape)){
 				bmn <- c(-1.5,0,1.5)
 				bsd <- c(.5,1,.5)
 				bw <- c(.25,.5,.25)
 				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
-				if ('d' %in% arg$shape){
-					cut <- -2
+				if (grepl('d',arg$shape)){
+					cut <- -1.5
 				}else {
-					cut <- 2
+					cut <- 1.5
 				}
 				amn <- c(1,2.5)
 				asd <- c(.15,.5)
 				aw <- c('eq')
 				itemdisc <- c()
 				for (diff in itemdiff){
-					if ('d' %in% arg$shape){
+					if (grepl('d',arg$shape)){
 						if (diff < cut){
 							disc <- multirnorm(1, mean=amn[2], sd=asd[2], w=aw)
 						}else {
@@ -168,22 +179,22 @@ for (nit in numitems){
 					}
 					itemdisc <- c(itemdisc,disc)
 				}
-			}else if ('LOG' %in% arg$shape){
+			}else if (grepl('LOG',arg$shape)){
 				bmn <- c(-1.5,0,1.5)
 				bsd <- c(.5,1,.5)
 				bw <- c(.25,.5,.25)
 				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
-				if ('r' %in% arg$shape){
-					cut <- 2
+				if (grepl('r',arg$shape)){
+					cut <- 1.5
 				}else {
-					cut <- -2
+					cut <- -1.5
 				}
 				amn <- c(3,1.5)
 				asd <- c(.15,.5)
 				aw <- c('eq')
 				itemdisc <- c()
 				for (diff in itemdiff){
-					if ('r' %in% arg$shape){
+					if (grepl('r',arg$shape)){
 						if (diff > cut){
 							disc <- multirnorm(1, mean=amn[2], sd=asd[2], w=aw)
 						}else {
@@ -209,15 +220,16 @@ for (nit in numitems){
 			writeLines(paste0('Difficulty Mean: ',paste0(bmn,collapse=',')), con = gen)
 			writeLines(paste0('Difficulty Standard Deviation: ',paste0(bsd,collapse=',')), con = gen)
 			writeLines(paste0('Difficulty Weighting: ',paste0(bw,collapse=',')), con = gen)
-			if (arg$shape == 'NULL'){
+			if (!grepl('LIN',arg$shape)){
 				writeLines(paste0('Discrimination Mean: ',paste0(amn,collapse=',')), con = gen)
-				writeLines(paste0('Discrimination Standard Deviation: ',paste0(asd,collapse=',')), con = gen)
-				writeLines(paste0('Discrimination Weighting: ',paste0(aw,collapse=',')), con = gen)
-			}else if ('LIN' %in% arg$shape){
+			}
+			writeLines(paste0('Discrimination Standard Deviation: ',paste0(asd,collapse=',')), con = gen)
+			writeLines(paste0('Discrimination Weighting: ',paste0(aw,collapse=',')), con = gen)
+			if (grepl('LIN',arg$shape)){
 				writeLines(paste0('Discrimination Formula: ',formula), con = gen)
-			}else if ('GAUSS' %in% arg$shape){
+			}else if (grepl('GAUSS',arg$shape)){
 				writeLines(paste0('Bounds used: ',bounds), con = gen)
-			}else if ('EXP' %in% arg$shape | 'LOG' %in% arg$shape){
+			}else if (grepl('EXP',arg$shape) | grepl('LOG',arg$shape)){
 				writeLines(paste0('Cut value used: ',cut), con = gen)
 			}
 			writeLines(paste0('Theta Mean: ',paste0(thmn,collapse=',')), con = gen)

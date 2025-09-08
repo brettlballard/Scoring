@@ -262,6 +262,10 @@ if (arg$flex){
 
 												#Generate data
 												for (r in 1:nrun){
+													print_color(paste0('==============================================================================\n'),'bviolet')
+													print_color(paste0('===============================RUN NUMBER ',r,'===================================\n'),'bviolet')
+													print_color(paste0('==============================================================================\n'),'bviolet')
+
 													#Setting incremented values
 													nitems <- nit
 													Item <- paste0('Item',1:nitems)

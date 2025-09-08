@@ -58,15 +58,14 @@ for (name in names){
 	for (nit in nitems){
 		for (nst in nstud){
 			for (r in nrun){
+				#Collecting the proportion of high discriminating items 
+				itemdf <- read.csv(paste0('simdata/flex/IRT/',name,'/',nit,'items','/',nst,'students','/',paste0(name,r),'-Items.csv'))
+				proph <- nrow(itemdf[itemdf$Discrimination >= 3,])/nrow(itemdf)
+				prophvec <- c(prophvec,proph)
 
-					#Collecting the proportion of high discriminating items 
-					itemdf <- read.csv(paste0('simdata/flex/IRT/',name,'/',nit,'items','/',nst,'students','/',paste0(name,r),'-Items.csv'))
-					proph <- nrow(itemdf[itemdf$Discrimination >= 3,])/nrow(itemdf)
-					prophvec <- c(prophvec,proph)
-
-					#Collecting the range of discriminations
-					discrange <- max(itemdf$Discrimination) - min(itemdf$Discrimination)
-					deldiscvec <- c(deldiscvec, discrange)
+				#Collecting the range of discriminations
+				discrange <- max(itemdf$Discrimination) - min(itemdf$Discrimination)
+				deldiscvec <- c(deldiscvec, discrange)
 			}
 		}
 	}
