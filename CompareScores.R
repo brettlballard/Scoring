@@ -30,6 +30,7 @@ if ('All' %in% arg$names){
 outputs <- list('expgrow'=350, 'expdecay'=350, 'log'=350, 'logrev'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'noshape'=350, 'normalb'=350, 'zerob'=350, 'normalblowainc'=950, 'zeroblowainc'=950, 'fcipost'=1, 'fmcethpost'=1)
 itemiter <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','zerob')
 sim <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','zerob')
+ggshapes <- c(0:14,32:127)
 ##############################################################################################################
 #################################################FUNCTIONS####################################################
 ##############################################################################################################
@@ -84,11 +85,12 @@ for (name in names){
 				scoredf <- scoredf %>%
 					mutate(Raw.Perc = Raw.Score / nit) %>%
 					mutate(WS.Perc = Scaled.Weighted.Score / nit) %>%
-					mutate(Percent.Difference = WS.Perc - Raw.Perc)
+					mutate(Percent.Difference = WS.Perc - Raw.Perc) %>%
+					mutate(Abs.Percent.Difference = abs(Percent.Difference)) 
 
 				meandf <- scoredf %>%
 					group_by(Raw.Perc) %>%
-					summarize(Mean.WS.Perc = mean(WS.Perc), Mean.Percent.Difference = mean(Percent.Difference)) %>%
+					summarize(Mean.WS.Perc = mean(WS.Perc), Mean.Percent.Difference = mean(Percent.Difference), Mean.Abs.Percent.Difference = mean(Abs.Percent.Difference)) %>%
 					mutate(Analysis.Name = name) %>%
 					mutate(Number.Items = nit) %>%
 					mutate(Run.Number = r) %>%
@@ -115,6 +117,13 @@ for (name in names){
 				}else {
 					ggsave(file=paste0('PercDiffvRawSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'))
 				}
+				
+				ggplot(data=scoredf, mapping=aes(x=Raw.Perc,y=Abs.Percent.Difference))+geom_point(size=1)+labs(title=paste0('Absolute Percent Difference vs Raw Score'))+scale_x_continuous(name='Raw Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Absolute Percent Difference: Weighted Score - Raw Score', n.breaks=10)+annotate('segment', x = 0, xend = 1, y=0, colour='blue', linetype='dashed')+geom_line(data=meandf, aes(x=Raw.Perc,y=Mean.Abs.Percent.Difference), color='red')
+				if (grepl('fci', name) | grepl('fmce', name)){
+					ggsave(file=paste0('AbsPercDiffvRawSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/'))
+				}else {
+					ggsave(file=paste0('AbsPercDiffvRawSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'))
+				}
 			}
 		}
 	}
@@ -127,16 +136,20 @@ print(colnames(meandata))
 
 plotdf <- meandata %>%
 	group_by(Raw.Perc, Analysis.Name, Number.Items) %>%
-	summarize(Mean.Mean.WS.Perc = mean(Mean.WS.Perc), Mean.Mean.Percent.Difference = mean(Mean.Percent.Difference)) %>%
+	summarize(Mean.Mean.WS.Perc = mean(Mean.WS.Perc), Mean.Mean.Percent.Difference = mean(Mean.Percent.Difference), Mean.Mean.Abs.Percent.Difference = mean(Mean.Abs.Percent.Difference)) %>%
 	mutate(Name = paste0(Analysis.Name,' ',Number.Items)) %>%
 	as_tibble() %>%
 	print()
 
-ggplot(data=plotdf, mapping=aes(x=Raw.Perc,y=Mean.Mean.WS.Perc,color=Name))+geom_line()+labs(title=paste0('Mean Weighted Score vs Raw Score'))+scale_x_continuous(name='Raw Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Weighted Score', n.breaks=10, limits=c(0,1))+annotate('segment', x=0, y=0, xend=1, yend=1, colour='blue', linetype='dashed')
+ggplot(data=plotdf, mapping=aes(x=Raw.Perc,y=Mean.Mean.WS.Perc,group=Name,color=Name,shape=Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(plotdf$Name))])+labs(title=paste0('Mean Weighted Score vs Raw Score'))+scale_x_continuous(name='Raw Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Weighted Score', n.breaks=10, limits=c(0,1))+annotate('segment', x=0, y=0, xend=1, yend=1, colour='blue', linetype='dashed')
 ggsave(file=paste0('MeanWeightedScvRawSc.pdf'), path=paste0('comparescoresout/'))
 
-ggplot(data=plotdf, mapping=aes(x=Raw.Perc,y=Mean.Mean.Percent.Difference,group=Name,color=Name,shape=Name))+geom_point()+geom_line()+scale_shape_manual(values=seq(from=1,to=length(unique(plotdf$Name)),by=1))+labs(title=paste0('Mean Percent Difference vs Raw Score'))+scale_x_continuous(name='Raw Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Percent Difference: Weighted Score - Raw Score', n.breaks=10)+annotate('segment', x=0, xend=1, y=0, colour='blue', linetype='dashed')
+ggplot(data=plotdf, mapping=aes(x=Raw.Perc,y=Mean.Mean.Percent.Difference,group=Name,color=Name,shape=Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(plotdf$Name))])+labs(title=paste0('Mean Percent Difference vs Raw Score'))+scale_x_continuous(name='Raw Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Percent Difference: Weighted Score - Raw Score', n.breaks=10)+annotate('segment', x=0, xend=1, y=0, colour='blue', linetype='dashed')
 ggsave(file=paste0('MeanPercDiffvRawSc.pdf'), path=paste0('comparescoresout/'))
+
+ggplot(data=plotdf, mapping=aes(x=Raw.Perc,y=Mean.Mean.Abs.Percent.Difference,group=Name,color=Name,shape=Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(plotdf$Name))])+labs(title=paste0('Mean Absolute Percent Difference vs Raw Score'))+scale_x_continuous(name='Raw Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Absolute Percent Difference: Weighted Score - Raw Score', n.breaks=10)+annotate('segment', x=0, xend=1, y=0, colour='blue', linetype='dashed')
+ggsave(file=paste0('MeanAbsPercDiffvRawSc.pdf'), path=paste0('comparescoresout/'))
+
 
 
 #Curious about runtime

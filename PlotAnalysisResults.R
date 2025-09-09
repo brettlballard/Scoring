@@ -20,15 +20,17 @@ arg <- parse_args(parser)
 
 #Resetting argument parameters
 if ('All' %in% arg$names){
-	names <- c('expgrow','gaussian','normalb','normalblowainc','noshape','poslinear','zerob','zeroblowainc')
+	names <- list('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','zerob','normalblowainc','zeroblowainc')
 }else {
 	names <- strsplit(arg$names,',')[[1]]
 }
 
 #Splitting datasets for stuff below
-outputs <- list('expgrow'=350, 'gaussian'=350, 'normalb'=350, 'normalblowainc'=950, 'noshape'=350, 'poslinear'=350, 'zerob'=350, 'zeroblowainc'=950)
-itemiter <- c('expgrow','gaussian','normalb','noshape','poslinear','zerob')
-disciter <- c('expgrow','gaussian','normalblowainc','noshape','poslinear','zeroblowainc')
+outputs <- list('expgrow'=350, 'expdecay'=350, 'log'=350, 'logrev'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'noshape'=350, 'normalb'=350, 'zerob'=350, 'normalblowainc'=950, 'zeroblowainc'=950)
+itemiter <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','zerob')
+disciter <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalblowainc','zeroblowainc')
+sim <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','zerob')
+ggshapes <- c(0:14,32:127)
 
 ##############################################################################################################
 #################################################FUNCTIONS####################################################
@@ -145,14 +147,16 @@ meandata <- do.call(rbind, meansets)
 print(as_tibble(meandata))
 print(colnames(meandata))
 
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.Diff,color=Analysis.Name))+geom_line()+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.Diff,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
 ggsave(file=paste0('DiffCorr-TrTh-WScvsRawSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
 
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.DiffEst,color=Analysis.Name))+geom_line()+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Est Expected Score - True Theta:Estimated Theta', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.DiffEst,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Est Expected Score - True Theta:Estimated Theta', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
 ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
 		
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2Del.TrTh.Diff,color=Analysis.Name))+geom_line()+labs(title=paste0('Difference in R-Squared Added'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Add Weighted Score - True Theta:Add Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
+ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2Del.TrTh.Diff,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in R-Squared Added'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Add Weighted Score - True Theta:Add Raw Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
 ggsave(file=paste0('DiffR2Del-TrTh-WScvsRawSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
+
+
 
 #Curious about runtime
 end <- Sys.time()
