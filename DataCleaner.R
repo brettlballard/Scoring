@@ -13,20 +13,27 @@ fcitbbl <- as_tibble(fcidf)
 fmcedf <- read.csv(paste0('realdata/FMCE-WVU.csv'))
 fmcetbbl <- as_tibble(fmcedf)
 
+kin1dpdv1df <- read.csv(paste0('realdata/Kin1D-PD-Ver1.csv'))
+kin1dpdv1tbbl <- as_tibble(kin1dpdv1df)
+
 #Define columns of interest
 fcipost <- paste0('AQ',1:30,'.y')
 fcipre <- paste0('AQ',1:30,'.x')
 fmcepre <- paste0('FMCEPre',1:47) 
 fmcepost <- paste0('FMCEPost',1:47) 
+kin1dpdv1items <- c('KD1.1.V3s','KD1.10.V7ECs','KD1.8.V5ECs','KD1.11.V7JSs','KD1.12.V3ECs','KD1.14.V3s','KD1.15.V3ECs','KD1.17.V4JSs','KD1.18.V1s','KD1.48.V2JSs','KD1.19.V4ECs','KD1.20.V5JSs','KD1.23.V4JSs','KD1.32.V8ECs','KD1.40.V7JSs','KD1.38.V8ECs','KD1.18.V5ECs','KD1.52.V5JSs','KD1.45.V3ECs','KD1.43.V8ECs')
 
 #New column names
 fciItem <- paste0('Item',1:30)
 fmceItem <- paste0('Item',1:47)
+kin1dpdv1Item <- paste0('Item',1:20)
 
 #Printing out the full tibble so one can see column names and data types
 print_color('============================================================================\n','bold')
 print_color('==============================Cleaned Data Set==============================\n','bold')
 print_color('============================================================================\n','bold')
+
+print_color('====================================FCI=====================================\n','bgreen')
 fcipostdata <- fcitbbl %>%
 	select(all_of(fcipost))
 setnames(fcipostdata, old = fcipost, new = fciItem)
@@ -39,6 +46,7 @@ setnames(fcipredata, old = fcipre, new = fciItem)
 print(fcipredata)
 write.csv(fcipredata, 'realdata/FCI-pre.csv', row.names = FALSE)
 
+print_color('====================================FMCE====================================\n','bgreen')
 #Clean FMCE data
 temp <- fmcetbbl %>%
 	select(all_of(c(fmcepre,fmcepost))) %>%
@@ -92,5 +100,25 @@ print(fmcepostdata)#TEMP
 print(fmcepostdataTh)
 write.csv(fmcepostdataTh, 'realdata/FMCETh-post.csv', row.names = FALSE)
 
+print_color('===============================Kin1D-PD-Ver1================================\n','bgreen')
+print(kin1dpdv1tbbl)
+kin1dpdv1data <- kin1dpdv1tbbl %>%
+	select(all_of(c(kin1dpdv1items,'Test.Time')))
+setnames(kin1dpdv1data, old = kin1dpdv1items, new = kin1dpdv1Item)
+print(kin1dpdv1data)
 
+kin1dpdv1post <- kin1dpdv1data %>%
+	filter(grepl('Post',Test.Time)) %>%
+	select(all_of(kin1dpdv1Item))
+print(kin1dpdv1post)
+write.csv(kin1dpdv1post, 'realdata/Kin1D-PD-Ver1-post.csv', row.names = FALSE)
+
+kin1dpdv1pre <- kin1dpdv1data %>%
+	filter(grepl('Pre',Test.Time)) %>%
+	select(all_of(kin1dpdv1Item))
+print(kin1dpdv1pre)
+write.csv(kin1dpdv1pre, 'realdata/Kin1D-PD-Ver1-pre.csv', row.names = FALSE)
+
+itemcodes <- data.frame(Old.Item.Names = gsub('s','',kin1dpdv1items), New.Item.Names = kin1dpdv1Item)
+write.csv(itemcodes, 'realdata/Kin1D-PD-Ver1-ItemCodes.csv', row.names = FALSE)
 
