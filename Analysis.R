@@ -524,14 +524,6 @@ for (nit in numitems){
 			#Save data
 			RMSEEstExpScvSimSumSc <- c(RMSEEstExpScvSimSumSc, sqrt((SSR/npart)))
 
-#Plotting estimated expected total v simsum sum score
-			ggplot(data=scoredata, mapping=aes(x=SimSum.Score,y=Est.ExpScore))+geom_point(size=2)+labs(title=paste0('Estimated Expected Score vs SimSum Score'))+scale_x_continuous(name='SimSum Score')+scale_y_continuous(name='Estimated Expected Score')
-			if (tt == 'flex'){
-				ggsave(file=paste0('EstExpvSimSumSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
-			}else {
-				ggsave(file=paste0('EstExpvSimSumSum-',nst,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
-			}
-
 			print_color('==============Estimated Expected Total v Scaled Weighted Sum Score==========\n','bcyan')
 			#Calculating residual sum of squares 
 			resid <- scoredata$Scaled.Weighted.Score - scoredata$Est.ExpScore
@@ -541,14 +533,6 @@ for (nit in numitems){
 			#Save data
 			RMSEEstExpScvWSc <- c(RMSEEstExpScvWSc, sqrt((SSR/npart)))
 
-			#Plotting estimated expected total v scaled weighted sum score
-			ggplot(data=scoredata, mapping=aes(x=Scaled.Weighted.Score,y=Est.ExpScore))+geom_point(size=2)+labs(title=paste0('Estimated Expected Score vs Scaled Weighted Score'))+scale_x_continuous(name='Scaled Weighted Score')+scale_y_continuous(name='Estimated Expected Score')
-			if (tt == 'flex'){
-				ggsave(file=paste0('EstExpvWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
-			}else {
-				ggsave(file=paste0('EstExpvWeightSum-',nst,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
-			}
-
 			print_color('===================Scaled Weighted Sum Score v SimSum Sum Score================\n','bcyan')
 			#Calculating residual sum of squares 
 			resid <- scoredata$SimSum.Score - scoredata$Scaled.Weighted.Score
@@ -557,14 +541,6 @@ for (nit in numitems){
 			
 			#Save data
 			RMSEWScvSimSumSc <- c(RMSEWScvSimSumSc, sqrt((SSR/npart)))
-
-			#Plotting scaled weighted sum score v simsum sum score
-			ggplot(data=scoredata, mapping=aes(x=SimSum.Score,y=Scaled.Weighted.Score))+geom_point(size=2)+labs(title=paste0('Scaled Weighted Score vs SimSum Score'))+scale_x_continuous(name='SimSum Score')+scale_y_continuous(name='Scaled Weighted Score')
-			if (tt == 'flex'){
-				ggsave(file=paste0('WeightSumvSimSumSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
-			}else {
-				ggsave(file=paste0('WeightSumvSimSumSum-',nst,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
-			}
 
 			#Plotting true estimated expected total vs the other two above
 			if (test == 'IRT'){
@@ -588,14 +564,6 @@ for (nit in numitems){
 				#Save data 
 				RMSETrExpScvSimSumSc <- c(RMSETrExpScvSimSumSc, sqrt(SSR/npart))
 
-				#Plotting true expected total v simsum sum score
-				ggplot(data=scoredata, mapping=aes(x=SimSum.Score,y=True.ExpScore))+geom_point(size=2)+labs(title=paste0('True Expected Score vs SimSum Score'))+scale_x_continuous(name='SimSum Score')+scale_y_continuous(name='True Expected Score')
-				if (tt == 'flex'){
-					ggsave(file=paste0('TrueExpvSimSumSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
-				}else {
-					ggsave(file=paste0('TrueExpvSimSumSum-',nst,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
-				}
-
 				print_color('================True Expected Total v Estimated Expected Total==============\n','bcyan')
 				#Calculating residual sum of squares 
 				resid <- scoredata$Est.ExpScore - scoredata$True.ExpScore
@@ -604,14 +572,6 @@ for (nit in numitems){
 				
 				#Save data 
 				RMSETrExpScvEstExpSc <- c(RMSETrExpScvEstExpSc, sqrt(SSR/npart))
-
-				#Plotting true expected total v estimated expected total
-				ggplot(data=scoredata, mapping=aes(x=Est.ExpScore,y=True.ExpScore))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Estimated Expected Score'))+scale_x_continuous(name='Estimated Expected Score')+scale_y_continuous(name='True Expected Score')
-				if (tt == 'flex'){
-					ggsave(file=paste0('TrueExpvEstExp-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
-				}else {
-					ggsave(file=paste0('TrueExpvEstExp-',nst,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
-				}
 
 				print_color('===================True Expected Total v Scaled Weighted Sum Score=================\n','bcyan')
 				#Calculating residual sum of squares 
@@ -622,13 +582,6 @@ for (nit in numitems){
 				#Save data 
 				RMSETrExpScvWSc <- c(RMSETrExpScvWSc, sqrt(SSR/npart))
 
-				#Plotting true expected total v scaled weighted sum score
-				ggplot(data=scoredata, mapping=aes(x=True.ExpScore,y=Scaled.Weighted.Score))+geom_point(size=2)+labs(title=paste0('True Expected Score vs Scaled Weighted Score'))+scale_x_continuous(name='Scaled Weighted Score')+scale_y_continuous(name='True Expected Score')
-				if (tt == 'flex'){
-					ggsave(file=paste0('TrueExpvWeightSum-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
-				}else {
-					ggsave(file=paste0('TrueExpvWeightSum-',nst,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
-				}
 			}#end of IRT only loop
 
 			#Saving different scores and removing rows with infite estimated theta
@@ -875,16 +828,6 @@ for (nit in numitems){
 					CorrTrExpScvWSc <- c(CorrTrExpScvWSc, trexpvwscore)
 					CorrTrExpScvEstExpSc <- c(CorrTrExpScvEstExpSc, trexpvestexp)
 					
-					#Plotting true vs estimated thetas
-					plotdf <- data.frame(True.Theta = th, Est.Theta = estth)
-					ggplot(data=plotdf, mapping=aes(x=True.Theta,y=Est.Theta))+geom_point(size=2)+labs(title=paste0('Estimated Theta vs True Theta'))+scale_x_continuous(name='True.Theta')+scale_y_continuous(name='Estimated Theta')
-					if (tt == 'flex'){
-						ggsave(file=paste0('TrueThvEstTh-',paste0(name,r),'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/'))
-					}else {
-						ggsave(file=paste0('TrueThvEstTh-',nst,'.pdf'),path = paste0('analysisout/plots/',test,'/',tt,'/'))
-					}
-						
-
 				}else if (test == 'CTT'){
 					#Difficulty parameter
 					diffresid <- pardf$Difficulty - est.parcttdf$Est.Difficulty.CTT
