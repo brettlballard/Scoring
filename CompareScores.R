@@ -60,10 +60,6 @@ for (name in names){
 	nrun <- unique(df$Number.Run)
 	
 	#Will use more runs later but reducing to just the thirty item ones now
-	if (grepl('ainc',name)){
-		print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!',name,' ANALYSIS NOT RUN!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bred')
-		next
-	}
 	if (grepl('fci',name)){
 		nitems <- 29
 	}else if (grepl('kin1dpdv1',name)){
@@ -124,13 +120,6 @@ for (name in names){
 					ggsave(file=paste0('PercDiffvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/'))
 				}else {
 					ggsave(file=paste0('PercDiffvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'))
-				}
-				
-				ggplot(data=scoredf, mapping=aes(x=SimSum.Perc,y=Abs.Percent.Difference))+geom_point(size=1)+labs(title=paste0('Absolute Percent Difference vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Absolute Percent Difference: Weighted Score - SimSum Score', n.breaks=10)+annotate('segment', x = 0, xend = 1, y=0, colour='blue', linetype='dashed')+geom_line(data=meandf, aes(x=SimSum.Perc,y=Mean.Abs.Percent.Difference), color='red')
-				if (grepl('fci', name) | grepl('fmce', name) | grepl('kin1dpdv1',name)){
-					ggsave(file=paste0('AbsPercDiffvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/'))
-				}else {
-					ggsave(file=paste0('AbsPercDiffvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'))
 				}
 			}
 		}

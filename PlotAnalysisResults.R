@@ -12,6 +12,7 @@ library(insight)#print_color function
 library(argparser)#anything parser related
 library(mirt)#IRT stuff
 library(ggplot2)#plot related
+library(cowplot)#combining plots
 
 #Adding argument parsers so that I can vary the scoring analysis from the command line
 parser <- arg_parser('Options for varying the correlational analysis for a run of scoring analyses')
@@ -84,6 +85,8 @@ for (name in names){
 		mutate(CORR.TrTh.Diff = CORR.TrTh.WSc - CORR.TrTh.SimSumSc) %>%
 		mutate(CORR.TrExpSc.Diff = CORR.TrExpSc.WSc - CORR.TrExpSc.SimSumSc) %>%
 		mutate(CORR.TrTh.DiffEst = CORR.TrTh.EstExpSc - CORR.TrTh.EstTh) %>%
+		mutate(FracR2Add.TrTh.WSc = R2Del.TrTh.add.WSc / (1 - R2.TrTh.SimSumSc)) %>%
+		mutate(FracR2Add.TrTh.SimSumSc = R2Del.TrTh.add.SimSumSc / (1 - R2.TrTh.WSc)) %>%
 		as_tibble() %>%
 		print()
 
@@ -95,7 +98,7 @@ for (name in names){
 		
 		meandf <- df %>%
 			group_by(Number.Items) %>%
-			summarize(Mean.CORR.TrTh.Diff = mean(CORR.TrTh.Diff), Mean.CORR.TrTh.DiffEst = mean(CORR.TrTh.DiffEst), Mean.R2Del.TrTh.Diff = mean(R2Del.TrTh.Diff)) %>%
+			summarize(Mean.CORR.TrTh.Diff = mean(CORR.TrTh.Diff), Mean.CORR.TrTh.DiffEst = mean(CORR.TrTh.DiffEst), Mean.R2Del.TrTh.Diff = mean(R2Del.TrTh.Diff), Mean.FracR2Add.TrTh.WSc = mean(FracR2Add.TrTh.WSc), Mean.FracR2Add.TrTh.SimSumSc = mean(FracR2Add.TrTh.SimSumSc)) %>%
 			mutate(Analysis.Name = rep(name,times = length(nitems))) %>%
 			as_tibble() %>%
 			print()
@@ -109,6 +112,16 @@ for (name in names){
 		
 		ggplot(data=df, mapping=aes(x=Number.Items,y=R2Del.TrTh.Diff))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in R-Squared Added'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Add Weighted Score - True Theta:Add SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.R2Del.TrTh.Diff))
 		ggsave(file=paste0('DiffR2Del-TrTh-WScvsSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
+
+		#Will combine the two below
+		fracWSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=FracR2Add.TrTh.WSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Fraction of Available Variance in True Theta Explained By Weighted Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.FracR2Add.TrTh.WSc))
+
+		fracSimSumSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=FracR2Add.TrTh.SimSumSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Fraction of Available Variance in True Theta Explained by SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.FracR2Add.TrTh.SimSumSc))
+		
+		frac <- plot_grid(fracWSc+theme(legend.position='none'), fracSimSumSc+theme(legend.position='none'), labels = c('A','B'))
+		legend <- get_legend(fracWSc+guides(color = guide_legend(nrow=1))+theme(legend.position = 'bottom'))
+		frac <- plot_grid(frac, legend, ncol = 1, rel_heights=c(1, .1))
+		ggsave(file=paste0('FracR2Add-TrTh-WScvSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'), frac)
 
 		if (name %in% disciter){
 			ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.Diff))+geom_point(size=1,aes(color=Discrimination.Range))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.Diff))
@@ -155,6 +168,16 @@ ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterItems.pdf'), path=paste0('
 		
 ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2Del.TrTh.Diff,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in R-Squared Added'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Add Weighted Score - True Theta:Add SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
 ggsave(file=paste0('DiffR2Del-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
+
+#Will combine the two below
+mnfracWSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.FracR2Add.TrTh.WSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Fraction of Available Variance in True Theta Explained by Weighted Score', n.breaks=10)
+
+mnfracSimSumSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.FracR2Add.TrTh.SimSumSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Fraction of Available Variance in True Theta Explained by SimSum Score', n.breaks=10)
+
+mnfrac <- plot_grid(mnfracWSc+theme(legend.position='none'), mnfracSimSumSc+theme(legend.position='none'), labels = c('A','B'))
+legend <- get_legend(mnfracWSc+guides(color = guide_legend(nrow=1))+theme(legend.position = 'bottom'))
+mnfrac <- plot_grid(mnfrac, legend, ncol = 1, rel_heights=c(.8, .2))
+save_plot(file=paste0('FracR2Add-TrTh-WScvSimSumSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'),mnfrac, ncol = 1, nrow = 2)
 
 
 

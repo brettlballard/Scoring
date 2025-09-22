@@ -1,13 +1,5 @@
 # ignore everything in realdata folders
 realdata/
-# ignore everything in simdata folders
-simdata/
-# ignore everything in analysisout folders
-analysisout/
-# ignore everything in plotanalysisout folders
-plotanalysisout/
-# ignore everything in comparescoresout folders
-comparescoresout/
 # ignore everything in inventories folders
 inventories/
 # ignore everything in the papers folder
