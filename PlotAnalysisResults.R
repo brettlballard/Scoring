@@ -78,15 +78,9 @@ for (name in names){
 	df$Discrimination.Range <- deldiscvec
 	df$Discrimination.Range <- sapply(df$Discrimination.Range, function(x) round(x,2))
 	df <- df %>%
-		mutate(R2Del.TrTh.Diff = R2Del.TrTh.add.WSc - R2Del.TrTh.add.SimSumSc) %>%
-		mutate(R2Del.TrExpSc.Diff = R2Del.TrExpSc.add.WSc - R2Del.TrExpSc.add.SimSumSc) %>%
-		mutate(R2Del.EstTh.Diff = R2Del.EstTh.add.WSc - R2Del.EstTh.add.SimSumSc) %>%
-		mutate(R2Del.EstExpSc.Diff = R2Del.EstExpSc.add.WSc - R2Del.EstExpSc.add.SimSumSc) %>%
 		mutate(CORR.TrTh.Diff = CORR.TrTh.WSc - CORR.TrTh.SimSumSc) %>%
 		mutate(CORR.TrExpSc.Diff = CORR.TrExpSc.WSc - CORR.TrExpSc.SimSumSc) %>%
 		mutate(CORR.TrTh.DiffEst = CORR.TrTh.EstExpSc - CORR.TrTh.EstTh) %>%
-		mutate(FracR2Add.TrTh.WSc = R2Del.TrTh.add.WSc / (1 - R2.TrTh.SimSumSc)) %>%
-		mutate(FracR2Add.TrTh.SimSumSc = R2Del.TrTh.add.SimSumSc / (1 - R2.TrTh.WSc)) %>%
 		as_tibble() %>%
 		print()
 
@@ -98,7 +92,7 @@ for (name in names){
 		
 		meandf <- df %>%
 			group_by(Number.Items) %>%
-			summarize(Mean.CORR.TrTh.Diff = mean(CORR.TrTh.Diff), Mean.CORR.TrTh.DiffEst = mean(CORR.TrTh.DiffEst), Mean.R2Del.TrTh.Diff = mean(R2Del.TrTh.Diff), Mean.FracR2Add.TrTh.WSc = mean(FracR2Add.TrTh.WSc), Mean.FracR2Add.TrTh.SimSumSc = mean(FracR2Add.TrTh.SimSumSc)) %>%
+			summarize(Mean.CORR.TrTh.Diff = mean(CORR.TrTh.Diff), Mean.CORR.TrTh.DiffEst = mean(CORR.TrTh.DiffEst)) %>%
 			mutate(Analysis.Name = rep(name,times = length(nitems))) %>%
 			as_tibble() %>%
 			print()
@@ -110,8 +104,6 @@ for (name in names){
 		ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.DiffEst))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Est Expected Score - True Theta: Estimated Theta', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.DiffEst))
 		ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
 		
-		ggplot(data=df, mapping=aes(x=Number.Items,y=R2Del.TrTh.Diff))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in R-Squared Added'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Add Weighted Score - True Theta:Add SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.R2Del.TrTh.Diff))
-		ggsave(file=paste0('DiffR2Del-TrTh-WScvsSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
 
 		#Will combine the two below
 		fracWSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=FracR2Add.TrTh.WSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Fraction of Available Variance in True Theta Explained By Weighted Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.FracR2Add.TrTh.WSc))
@@ -129,9 +121,6 @@ for (name in names){
 
 			ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.DiffEst))+geom_point(size=1,aes(color=Discrimination.Range))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Est Expected Score - True Theta: Estimated Theta', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.DiffEst))
 			ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterItems-DR.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
-			
-			ggplot(data=df, mapping=aes(x=Number.Items,y=R2Del.TrTh.Diff))+geom_point(size=1,aes(color=Discrimination.Range))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in R-Squared Added'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Add Weighted Score - True Theta:Add SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.R2Del.TrTh.Diff))
-			ggsave(file=paste0('DiffR2Del-TrTh-WScvsSimSumSc-IterItems-DR.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
 		}
 	}
 	if (name %in% disciter){
@@ -140,9 +129,6 @@ for (name in names){
 
 		ggplot(data=df, mapping=aes(x=Discrimination.Range,y=CORR.TrTh.DiffEst))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Discrimination Range', n.breaks=10, limits=c(min(df$Discrimination.Range)-.25,max(df$Discrimination.Range)+.25))+scale_y_continuous(name='True Theta:Est Expected Score - True Theta: Estimated Theta', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
 		ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterDisc-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
-		
-		ggplot(data=df, mapping=aes(x=Discrimination.Range,y=R2Del.TrTh.Diff))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in R-Squared Added'))+scale_x_continuous(name='Discrimination Range', n.breaks=10, limits=c(min(df$Discrimination.Range)-.25,max(df$Discrimination.Range)+.25))+scale_y_continuous(name='True Theta:Add Weighted Score - True Theta:Add SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
-		ggsave(file=paste0('DiffR2Del-TrTh-WScvsSimSumSc-IterDisc-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
 	}
 	
 	datasets <- append(datasets, list(df))
@@ -166,9 +152,6 @@ ggsave(file=paste0('DiffCorr-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('pl
 ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.DiffEst,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Est Expected Score - True Theta:Estimated Theta', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
 ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
 		
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2Del.TrTh.Diff,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in R-Squared Added'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Add Weighted Score - True Theta:Add SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
-ggsave(file=paste0('DiffR2Del-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
-
 #Will combine the two below
 mnfracWSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.FracR2Add.TrTh.WSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Fraction of Available Variance in True Theta Explained by Weighted Score', n.breaks=10)
 

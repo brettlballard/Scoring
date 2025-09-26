@@ -220,12 +220,9 @@ RMSEEstExpScvWSc <- c()
 RMSEWScvSimSumSc <- c()
 R2EstThbySimSumSc <- c()	
 R2EstThbyWSc <- c()	
-R2EstThdeladdSimSumSc <- c()
-R2EstThdeladdWSc <- c()
 R2EstExpScbySimSumSc <- c()	
 R2EstExpScbyWSc <- c()	
-R2EstExpScdeladdSimSumSc <- c()
-R2EstExpScdeladdWSc <- c()
+Corr2PLDiffv2PLDisc <- c()
 CorrEstThvSimSumSc <- c()
 CorrEstThvWSc <- c()
 CorrEstThvEstExpSc <- c()
@@ -240,12 +237,8 @@ if (test == 'IRT'){
 	RMSETrExpScvEstExpSc <- c()
 	R2TrThbySimSumSc <- c()
 	R2TrThbyWSc <- c()
-	R2TrThdeladdSimSumSc <- c()
-	R2TrThdeladdWSc <- c()
 	R2TrExpScbySimSumSc <- c()
 	R2TrExpScbyWSc <- c()
-	R2TrExpScdeladdSimSumSc <- c()
-	R2TrExpScdeladdWSc <- c()
 	RMSEb <- c()
 	RMSEa <- c()
 	RMSEth <- c()
@@ -426,6 +419,10 @@ for (nit in numitems){
 				write.csv(est.par2pldf, paste0('analysisout/summary/',test,'/',tt,'/2PLpar-',nst,'.csv'), row.names = FALSE)
 			}
 
+			#Saving 2PL difficulty vs 2PL discrimination correlation
+			diff2plvsdisc2pl <- cor(est.par2pldf$Est.Difficulty.2PL, est.par2pldf$Est.Discrimination.2PL, method = 'pearson')
+			Corr2PLDiffv2PLDisc <- c(Corr2PLDiffv2PLDisc, diff2plvsdisc2pl)
+			
 			#Plotting 2PL difficulty vs 2PL discrimination
 			ggplot(data=est.par2pldf, mapping=aes(x=Est.Difficulty.2PL,y=Est.Discrimination.2PL))+geom_point(size=2)+geom_text_repel(label=est.par2pldf$Items, size=2,max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+labs(title='2PL Item Difficulty vs 2PL Item Discrimination')+scale_x_continuous(name='2PL Item Difficulty', n.breaks=10, limits=c(min(est.par2pldf$Est.Difficulty.2PL),max(est.par2pldf$Est.Difficulty.2PL)))+scale_y_continuous(name='2PL Item Discrimination', n.breaks=10, limits=c(min(est.par2pldf$Est.Discrimination.2PL),max(est.par2pldf$Est.Discrimination.2PL)))#+geom_smooth(method = lm, se = TRUE)
 			if (tt == 'flex'){
@@ -596,72 +593,43 @@ for (nit in numitems){
 			print_color('=====Comparing Weighted Score and SimSum Score at Predicting Estimated Theta===\n','bcyan')
 			mod1 <- lm(Est.Theta ~ SimSum.Score, data = scoreout)
 			mod2 <- lm(Est.Theta ~ Scaled.Weighted.Score, data = scoreout)
-			mod3 <- lm(Est.Theta ~ SimSum.Score + Scaled.Weighted.Score, data = scoreout)
-			addSWS1 <- summary(mod3)$r.squared - summary(mod1)$r.squared
-			addSimSum1 <- summary(mod3)$r.squared - summary(mod2)$r.squared
 			print_color(paste0('R^2 for simsum score only model: ',round(summary(mod1)$r.squared,4),'\n'),'bviolet')
 			print_color(paste0('R^2 for scaled weighted score only model: ',round(summary(mod2)$r.squared,4),'\n'),'bviolet')
-			print_color(paste0('R^2 change from adding scaled weighted score: ',round(addSWS1,4),'\n'),'bviolet')
-			print_color(paste0('R^2 change from adding simsum score: ',round(addSimSum1,4),'\n'),'bviolet')
 			
 			#Save data
 		       	R2EstThbySimSumSc <- c(R2EstThbySimSumSc, summary(mod1)$r.squared)	
 		       	R2EstThbyWSc <- c(R2EstThbyWSc, summary(mod2)$r.squared)	
-			R2EstThdeladdSimSumSc <- c(R2EstThdeladdSimSumSc, addSimSum1)
-			R2EstThdeladdWSc <- c(R2EstThdeladdWSc, addSWS1)
 			
 			print_color('Comparing Weighted Score and SimSum Score at Predicting Estimated Expected Score\n','bcyan')
 			mod1 <- lm(Est.ExpScore ~ SimSum.Score, data = scoreout)
 			mod2 <- lm(Est.ExpScore ~ Scaled.Weighted.Score, data = scoreout)
-			mod3 <- lm(Est.ExpScore ~ SimSum.Score + Scaled.Weighted.Score, data = scoreout)
-			addSWS2 <- summary(mod3)$r.squared - summary(mod1)$r.squared
-			addSimSum2 <- summary(mod3)$r.squared - summary(mod2)$r.squared
 			print_color(paste0('R^2 for simsum score only model: ',round(summary(mod1)$r.squared,4),'\n'),'bviolet')
 			print_color(paste0('R^2 for scaled weighted score only model: ',round(summary(mod2)$r.squared,4),'\n'),'bviolet')
-			print_color(paste0('R^2 change from adding scaled weighted score: ',round(addSWS2,4),'\n'),'bviolet')
-			print_color(paste0('R^2 change from adding simsum score: ',round(addSimSum2,4),'\n'),'bviolet')
 			
 			#Save data
 		       	R2EstExpScbySimSumSc <- c(R2EstExpScbySimSumSc, summary(mod1)$r.squared)	
 		       	R2EstExpScbyWSc <- c(R2EstExpScbyWSc, summary(mod2)$r.squared)	
-			R2EstExpScdeladdSimSumSc <- c(R2EstExpScdeladdSimSumSc, addSimSum2)
-			R2EstExpScdeladdWSc <- c(R2EstExpScdeladdWSc, addSWS2)
-		
 
 			if (test == 'IRT'){
 				print_color('=======Comparing Weighted Score and SimSum Score at Predicting True Theta======\n','bcyan')
 				mod1 <- lm(True.Theta ~ SimSum.Score, data = scoreout)
 				mod2 <- lm(True.Theta ~ Scaled.Weighted.Score, data = scoreout)
-				mod3 <- lm(True.Theta ~ SimSum.Score + Scaled.Weighted.Score, data = scoreout)
-				addSWS3 <- summary(mod3)$r.squared - summary(mod1)$r.squared
-				addSimSum3 <- summary(mod3)$r.squared - summary(mod2)$r.squared
 				print_color(paste0('R^2 for simsum score only model: ',round(summary(mod1)$r.squared,4),'\n'),'bviolet')
 				print_color(paste0('R^2 for scaled weighted score only model: ',round(summary(mod2)$r.squared,4),'\n'),'bviolet')
-				print_color(paste0('R^2 change from adding scaled weighted score: ',round(addSWS3,4),'\n'),'bviolet')
-				print_color(paste0('R^2 change from adding simsum score: ',round(addSimSum3,4),'\n'),'bviolet')
 			
 				#Save data
 				R2TrThbySimSumSc <- c(R2TrThbySimSumSc, summary(mod1)$r.squared)	
 				R2TrThbyWSc <- c(R2TrThbyWSc, summary(mod2)$r.squared)	
-				R2TrThdeladdSimSumSc <- c(R2TrThdeladdSimSumSc, addSimSum3)
-				R2TrThdeladdWSc <- c(R2TrThdeladdWSc, addSWS3)
 				
 				print_color('==Comparing Weighted Score and SimSum Score at Predicting True Expected Score==\n','bcyan')
 				mod1 <- lm(True.ExpScore ~ SimSum.Score, data = scoreout)
 				mod2 <- lm(True.ExpScore ~ Scaled.Weighted.Score, data = scoreout)
-				mod3 <- lm(True.ExpScore ~ SimSum.Score + Scaled.Weighted.Score, data = scoreout)
-				addSWS4 <- summary(mod3)$r.squared - summary(mod1)$r.squared
-				addSimSum4 <- summary(mod3)$r.squared - summary(mod2)$r.squared
 				print_color(paste0('R^2 for simsum score only model: ',round(summary(mod1)$r.squared,4),'\n'),'bviolet')
 				print_color(paste0('R^2 for scaled weighted score only model: ',round(summary(mod2)$r.squared,4),'\n'),'bviolet')
-				print_color(paste0('R^2 change from adding scaled weighted score: ',round(addSWS4,4),'\n'),'bviolet')
-				print_color(paste0('R^2 change from adding simsum score: ',round(addSimSum4,4),'\n'),'bviolet')
 				
 				#Save data
 				R2TrExpScbySimSumSc <- c(R2TrExpScbySimSumSc, summary(mod1)$r.squared)	
 				R2TrExpScbyWSc <- c(R2TrExpScbyWSc, summary(mod2)$r.squared)	
-				R2TrExpScdeladdSimSumSc <- c(R2TrExpScdeladdSimSumSc, addSimSum4)
-				R2TrExpScdeladdWSc <- c(R2TrExpScdeladdWSc, addSWS4)
 			}	
 			
 			#Make score ICCs 
@@ -846,9 +814,9 @@ print_color('===============================Analysis Output=====================
 print_color('============================================================================\n','bviolet')
 #Outputting saved data
 if (test == 'IRT'){
-	out <- data.frame('Number.Items' = nItems, 'Number.Students.Original' = nStud, 'Number.Students.Removed' = nStudRem, 'Number.Run' = RunNum, 'Alpha' = alpha, 'Model.RMSEA' = modelRMSEA, 'Model.SRMSR' = modelSRMSR, 'Model.TLI' = modelTLI, 'Model.CFI' = modelCFI, 'RMSE.Item.Discrimination' = RMSEa, 'RMSE.Item.Difficulty' = RMSEb, 'RMSE.Theta' = RMSEth, 'RMSE.EstExpSc.SimSumSc' = RMSEEstExpScvSimSumSc, 'RMSE.EstExpSc.WSc' = RMSEEstExpScvWSc, 'RMSE.WSc.SimSumSc' = RMSEWScvSimSumSc, 'RMSE.TrExpSc.SimSumSc' = RMSETrExpScvSimSumSc, 'RMSE.TrExpSc.WSc' = RMSETrExpScvWSc, 'RMSE.TrExpSc.EstExpSc' = RMSETrExpScvEstExpSc, 'R2.EstTh.SimSumSc' = R2EstThbySimSumSc, 'R2.EstTh.WSc' = R2EstThbyWSc, 'R2Del.EstTh.add.SimSumSc' = R2EstThdeladdSimSumSc, 'R2Del.EstTh.add.WSc' = R2EstThdeladdWSc, 'R2.EstExpSc.SimSumSc' = R2EstExpScbySimSumSc, 'R2.EstExpSc.WSc' = R2EstExpScbyWSc, 'R2Del.EstExpSc.add.SimSumSc' = R2EstExpScdeladdSimSumSc, 'R2Del.EstExpSc.add.WSc' = R2EstExpScdeladdWSc, 'R2.TrTh.SimSumSc' = R2TrThbySimSumSc, 'R2.TrTh.WSc' = R2TrThbyWSc, 'R2Del.TrTh.add.SimSumSc' = R2TrThdeladdSimSumSc, 'R2Del.TrTh.add.WSc' = R2TrThdeladdWSc, 'R2.TrExpSc.SimSumSc' = R2TrExpScbySimSumSc, 'R2.TrExpSc.WSc' = R2TrExpScbyWSc, 'R2Del.TrExpSc.add.SimSumSc' = R2TrExpScdeladdSimSumSc, 'R2Del.TrExpSc.add.WSc' = R2TrExpScdeladdWSc, 'CORR.EstTh.SimSumSc' = CorrEstThvSimSumSc, 'CORR.EstTh.WSc' = CorrEstThvWSc, 'CORR.EstTh.EstExpSc' = CorrEstThvEstExpSc, 'CORR.SimSumSc.WSc' = CorrSimSumScvWSc, 'CORR.SimSumSc.EstExpSc' = CorrSimSumScvEstExpSc, 'CORR.WScvEstExpSc' = CorrWScvEstExpSc, 'CORR.TrTh.TrExpSc' = CorrTrThvTrExpSc, 'CORR.TrTh.EstTh' = CorrTrThvEstTh, 'CORR.TrTh.SimSumSc' = CorrTrThvSimSumSc, 'CORR.TrTh.WSc' = CorrTrThvWSc, 'CORR.TrTh.EstExpSc' = CorrTrThvEstExpSc, 'CORR.TrExpSc.EstTh' = CorrTrExpScvEstTh, 'CORR.TrExpSc.SimSumSc' = CorrTrExpScvSimSumSc, 'CORR.TrExpSc.WSc' = CorrTrExpScvWSc, 'CORR.TrExpSc.EstExpSc' = CorrTrExpScvEstExpSc)
+	out <- data.frame('Number.Items' = nItems, 'Number.Students.Original' = nStud, 'Number.Students.Removed' = nStudRem, 'Number.Run' = RunNum, 'Alpha' = alpha, 'Model.RMSEA' = modelRMSEA, 'Model.SRMSR' = modelSRMSR, 'Model.TLI' = modelTLI, 'Model.CFI' = modelCFI, 'RMSE.Item.Discrimination' = RMSEa, 'RMSE.Item.Difficulty' = RMSEb, 'RMSE.Theta' = RMSEth, 'RMSE.EstExpSc.SimSumSc' = RMSEEstExpScvSimSumSc, 'RMSE.EstExpSc.WSc' = RMSEEstExpScvWSc, 'RMSE.WSc.SimSumSc' = RMSEWScvSimSumSc, 'RMSE.TrExpSc.SimSumSc' = RMSETrExpScvSimSumSc, 'RMSE.TrExpSc.WSc' = RMSETrExpScvWSc, 'RMSE.TrExpSc.EstExpSc' = RMSETrExpScvEstExpSc, 'R2.EstTh.SimSumSc' = R2EstThbySimSumSc, 'R2.EstTh.WSc' = R2EstThbyWSc, 'R2.EstExpSc.SimSumSc' = R2EstExpScbySimSumSc, 'R2.EstExpSc.WSc' = R2EstExpScbyWSc, 'R2.TrTh.SimSumSc' = R2TrThbySimSumSc, 'R2.TrTh.WSc' = R2TrThbyWSc, 'R2.TrExpSc.SimSumSc' = R2TrExpScbySimSumSc, 'R2.TrExpSc.WSc' = R2TrExpScbyWSc, 'CORR.2PLDiff.2PLDisc' = Corr2PLDiffv2PLDisc, 'CORR.EstTh.SimSumSc' = CorrEstThvSimSumSc, 'CORR.EstTh.WSc' = CorrEstThvWSc, 'CORR.EstTh.EstExpSc' = CorrEstThvEstExpSc, 'CORR.SimSumSc.WSc' = CorrSimSumScvWSc, 'CORR.SimSumSc.EstExpSc' = CorrSimSumScvEstExpSc, 'CORR.WScvEstExpSc' = CorrWScvEstExpSc, 'CORR.TrTh.TrExpSc' = CorrTrThvTrExpSc, 'CORR.TrTh.EstTh' = CorrTrThvEstTh, 'CORR.TrTh.SimSumSc' = CorrTrThvSimSumSc, 'CORR.TrTh.WSc' = CorrTrThvWSc, 'CORR.TrTh.EstExpSc' = CorrTrThvEstExpSc, 'CORR.TrExpSc.EstTh' = CorrTrExpScvEstTh, 'CORR.TrExpSc.SimSumSc' = CorrTrExpScvSimSumSc, 'CORR.TrExpSc.WSc' = CorrTrExpScvWSc, 'CORR.TrExpSc.EstExpSc' = CorrTrExpScvEstExpSc)
 }else {
-	out <- data.frame('Number.Items' = nItems, 'Number.Students.Original' = nStud, 'Number.Students.Removed' = nStudRem, 'Number.Run' = RunNum, 'Alpha' = alpha, 'Model.RMSEA' = modelRMSEA, 'Model.SRMSR' = modelSRMSR, 'Model.TLI' = modelTLI, 'Model.CFI' = modelCFI, 'RMSE.EstExpSc.SimSumSc' = RMSEEstExpScvSimSumSc, 'RMSE.EstExpSc.WSc' = RMSEEstExpScvWSc, 'RMSE.WSc.SimSumSc' = RMSEWScvSimSumSc, 'R2.EstTh.SimSumSc' = R2EstThbySimSumSc, 'R2.EstTh.WSc' = R2EstThbyWSc, 'R2Del.EstTh.add.SimSumSc' = R2EstThdeladdSimSumSc, 'R2Del.EstTh.add.WSc' = R2EstThdeladdWSc, 'R2.EstExpSc.SimSumSc' = R2EstExpScbySimSumSc, 'R2.EstExpSc.WSc' = R2EstExpScbyWSc, 'R2Del.EstExpSc.add.SimSumSc' = R2EstExpScdeladdSimSumSc, 'R2Del.EstExpSc.add.WSc' = R2EstExpScdeladdWSc, 'CORR.EstTh.SimSumSc' = CorrEstThvSimSumSc, 'CORR.EstTh.WSc' = CorrEstThvWSc, 'CORR.EstTh.EstExpSc' = CorrEstThvEstExpSc, 'CORR.SimSumSc.WSc' = CorrSimSumScvWSc, 'CORR.SimSumSc.EstExpSc' = CorrSimSumScvEstExpSc, 'CORR.WScvEstExpSc' = CorrWScvEstExpSc)
+	out <- data.frame('Number.Items' = nItems, 'Number.Students.Original' = nStud, 'Number.Students.Removed' = nStudRem, 'Number.Run' = RunNum, 'Alpha' = alpha, 'Model.RMSEA' = modelRMSEA, 'Model.SRMSR' = modelSRMSR, 'Model.TLI' = modelTLI, 'Model.CFI' = modelCFI, 'RMSE.EstExpSc.SimSumSc' = RMSEEstExpScvSimSumSc, 'RMSE.EstExpSc.WSc' = RMSEEstExpScvWSc, 'RMSE.WSc.SimSumSc' = RMSEWScvSimSumSc, 'R2.EstTh.SimSumSc' = R2EstThbySimSumSc, 'R2.EstTh.WSc' = R2EstThbyWSc, 'R2.EstExpSc.SimSumSc' = R2EstExpScbySimSumSc, 'R2.EstExpSc.WSc' = R2EstExpScbyWSc, 'CORR.2PLDiff.2PLDisc' = Corr2PLDiffv2PLDisc, 'CORR.EstTh.SimSumSc' = CorrEstThvSimSumSc, 'CORR.EstTh.WSc' = CorrEstThvWSc, 'CORR.EstTh.EstExpSc' = CorrEstThvEstExpSc, 'CORR.SimSumSc.WSc' = CorrSimSumScvWSc, 'CORR.SimSumSc.EstExpSc' = CorrSimSumScvEstExpSc, 'CORR.WScvEstExpSc' = CorrWScvEstExpSc)
 }
 
 #Outputting to a file for later analyses
@@ -863,7 +831,7 @@ if (tt == 'flex'){
 
 #Summarizing data collected over many runs
 if (niter > 1){
-	summcols <- c('Number.Students.Removed', 'Alpha', 'Model.RMSEA', 'Model.SRMSR', 'Model.TLI', 'Model.CFI', 'RMSE.Item.Discrimination', 'RMSE.Item.Difficulty', 'RMSE.Theta', 'RMSE.EstExpSc.SimSumSc', 'RMSE.EstExpSc.WSc', 'RMSE.WSc.SimSumSc', 'RMSE.TrExpSc.SimSumSc', 'RMSE.TrExpSc.WSc', 'RMSE.TrExpSc.EstExpSc', 'R2.EstTh.SimSumSc', 'R2.EstTh.WSc', 'R2Del.EstTh.add.SimSumSc', 'R2Del.EstTh.add.WSc', 'R2.EstExpSc.SimSumSc', 'R2.EstExpSc.WSc', 'R2Del.EstExpSc.add.SimSumSc', 'R2Del.EstExpSc.add.WSc', 'R2.TrTh.SimSumSc', 'R2.TrTh.WSc', 'R2Del.TrTh.add.SimSumSc', 'R2Del.TrTh.add.WSc', 'R2.TrExpSc.SimSumSc', 'R2.TrExpSc.WSc', 'R2Del.TrExpSc.add.SimSumSc', 'R2Del.TrExpSc.add.WSc', 'CORR.EstTh.SimSumSc', 'CORR.EstTh.WSc', 'CORR.EstTh.EstExpSc', 'CORR.SimSumSc.WSc', 'CORR.SimSumSc.EstExpSc', 'CORR.WScvEstExpSc', 'CORR.TrTh.TrExpSc', 'CORR.TrTh.EstTh', 'CORR.TrTh.SimSumSc', 'CORR.TrTh.WSc', 'CORR.TrTh.EstExpSc', 'CORR.TrExpSc.EstTh', 'CORR.TrExpSc.SimSumSc', 'CORR.TrExpSc.WSc', 'CORR.TrExpSc.EstExpSc')
+	summcols <- c('Number.Students.Removed', 'Alpha', 'Model.RMSEA', 'Model.SRMSR', 'Model.TLI', 'Model.CFI', 'RMSE.Item.Discrimination', 'RMSE.Item.Difficulty', 'RMSE.Theta', 'RMSE.EstExpSc.SimSumSc', 'RMSE.EstExpSc.WSc', 'RMSE.WSc.SimSumSc', 'RMSE.TrExpSc.SimSumSc', 'RMSE.TrExpSc.WSc', 'RMSE.TrExpSc.EstExpSc', 'R2.EstTh.SimSumSc', 'R2.EstTh.WSc', 'R2.EstExpSc.SimSumSc', 'R2.EstExpSc.WSc', 'R2.TrTh.SimSumSc', 'R2.TrTh.WSc', 'R2.TrExpSc.SimSumSc', 'R2.TrExpSc.WSc', 'CORR.2PLDiff.2PLDisc', 'CORR.EstTh.SimSumSc', 'CORR.EstTh.WSc', 'CORR.EstTh.EstExpSc', 'CORR.SimSumSc.WSc', 'CORR.SimSumSc.EstExpSc', 'CORR.WScvEstExpSc', 'CORR.TrTh.TrExpSc', 'CORR.TrTh.EstTh', 'CORR.TrTh.SimSumSc', 'CORR.TrTh.WSc', 'CORR.TrTh.EstExpSc', 'CORR.TrExpSc.EstTh', 'CORR.TrExpSc.SimSumSc', 'CORR.TrExpSc.WSc', 'CORR.TrExpSc.EstExpSc')
 	means <- c()
 	stderr <- c()
 	for (col in summcols){
