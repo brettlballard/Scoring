@@ -1,0 +1,12 @@
+Number of Items: 25
+Number of Students: 5000
+Parameter Distribution Type: norm
+Difficulty Mean: -1.5,0,1.5
+Difficulty Standard Deviation: 0.5,1,0.5
+Difficulty Weighting: 0.25,0.5,0.25
+Discrimination Formula: Disc = .5  + (3.25 - .5) * (1 / (1 + exp(-1.5 * (Diff - 0))))
+Discrimination Standard Deviation: 0.25
+Discrimination Weighting: eq
+Theta Mean: 0
+Theta Standard Deviation: 1
+Theta Weighting: eq

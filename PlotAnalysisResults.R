@@ -7,7 +7,6 @@ start <- Sys.time()
 #Libraries and what they are used for commented next to them
 library(dplyr)#as_tibble and many other dataframe manipulation shortcuts
 library(data.table)#setnames function
-library(reshape2)#melt function
 library(insight)#print_color function
 library(argparser)#anything parser related
 library(mirt)#IRT stuff
@@ -21,16 +20,16 @@ arg <- parse_args(parser)
 
 #Resetting argument parameters
 if ('All' %in% arg$names){
-	names <- list('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','zerob')
+	names <- list('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb')
 }else {
 	names <- strsplit(arg$names,',')[[1]]
 }
 
 #Splitting datasets for stuff below
-outputs <- list('expgrow'=350, 'expdecay'=350, 'log'=350, 'logrev'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'noshape'=350, 'normalb'=350, 'zerob'=350)
-itemiter <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','zerob')
+outputs <- list('expgrow'=350, 'expdecay'=350, 'log'=350, 'logrev'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'noshape'=350, 'normalb'=350)
+itemiter <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb')
 disciter <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape')
-sim <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','zerob')
+sim <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb')
 ggshapes <- c(0:14,32:127)
 
 ##############################################################################################################
