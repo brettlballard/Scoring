@@ -113,11 +113,11 @@ for (nit in numitems){
 					itemdisc <- multirnorm(nitems, mean=amn, sd=asd, w=aw)
 				}else if (arg$shape == 'SPLIT'){
 					amn <- c(.5,3)
-					asd <- c(.1,.25)
+					asd <- c(.1,.1)
 					aw <- c(.7,.3)
 					itemdisc <- multirnorm(nitems, mean=amn, sd=asd, w=aw)
 				}else if (grepl('LIN',arg$shape)){
-					asd <- c(.25)
+					asd <- c(.1)
 					aw <- c('eq')
 					itemdisc <- c()
 					for (diff in itemdiff){
@@ -132,7 +132,7 @@ for (nit in numitems){
 						itemdisc <- c(itemdisc,disc)
 					}
 				}else if (grepl('GAUSS',arg$shape)){
-					asd <- c(.25)
+					asd <- c(.1)
 					aw <- c('eq')
 					itemdisc <- c()
 					for (diff in itemdiff){
@@ -147,7 +147,7 @@ for (nit in numitems){
 						itemdisc <- c(itemdisc,disc)
 					}
 				}else if (grepl('EXP',arg$shape)){
-					asd <- c(.25)
+					asd <- c(.1)
 					aw <- c('eq')
 					itemdisc <- c()
 					for (diff in itemdiff){
@@ -162,7 +162,7 @@ for (nit in numitems){
 						itemdisc <- c(itemdisc,disc)
 					}
 				}else if (grepl('LOGIST',arg$shape)){
-					asd <- c(.25)
+					asd <- c(.1)
 					aw <- c('eq')
 					itemdisc <- c()
 					for (diff in itemdiff){
@@ -177,7 +177,7 @@ for (nit in numitems){
 						itemdisc <- c(itemdisc,disc)
 					}
 				}else if (grepl('ASYM',arg$shape)){
-					asd <- c(.25)
+					asd <- c(.1)
 					aw <- c('eq')
 					itemdisc <- c()
 					for (diff in itemdiff){
@@ -252,7 +252,10 @@ for (nit in numitems){
 				}
 				print(checkvec)#will suppress after testing
 				print(all(checkvec))#will suppress after testing
-				check <- all(checkvec)	
+				check <- all(checkvec)
+				if (is.na(check)){
+					check <- FALSE
+				}	
 				if (check){
 					print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!DATA PASSED QUALITY CHECK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 					DataCheck <- FALSE
