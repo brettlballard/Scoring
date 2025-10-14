@@ -21,15 +21,15 @@ arg <- parse_args(parser)
 
 #Resetting argument parameters
 if ('All' %in% arg$names){
-	names <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','fcipost','fmcethpost','kin1dpdv1post')
+	names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipost','fmcethpost','kin1dpdv1post')
 }else {
 	names <- strsplit(arg$names,',')[[1]]
 }
 
 #Splitting datasets for stuff below
-outputs <- list('expgrow'=350, 'expdecay'=350, 'log'=350, 'logrev'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'noshape'=350, 'normalb'=350, 'fcipost'=1, 'fmcethpost'=1,'kin1dpdv1'=1)
-itemiter <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb')
-sim <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb')
+outputs <- list('expgrow'=350, 'expdecay'=350, 'logist'=350, 'reflogist'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'leftasym'=350, 'rightasym'=350, 'noshape'=350, 'split'=350, 'fcipost'=1, 'fmcethpost'=1,'kin1dpdv1'=1)
+itemiter <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split')
+sim <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split')
 ggshapes <- c(0:14,32:127)
 ##############################################################################################################
 #################################################FUNCTIONS####################################################
