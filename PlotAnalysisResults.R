@@ -7,6 +7,7 @@ start <- Sys.time()
 #Libraries and what they are used for commented next to them
 library(dplyr)#as_tibble and many other dataframe manipulation shortcuts
 library(data.table)#setnames function
+library(reshape2)#melt function
 library(insight)#print_color function
 library(argparser)#anything parser related
 library(mirt)#IRT stuff
@@ -199,6 +200,20 @@ mnr2 <- plot_grid(mnR2WSc+theme(legend.position='none'), mnR2SimSumSc+theme(lege
 legend <- get_legend(mnR2WSc+guides(color = guide_legend(nrow=1))+theme(legend.position = 'bottom'))
 mnr2 <- plot_grid(mnr2, legend, ncol = 1, rel_heights=c(.8, .2))
 save_plot(file=paste0('R2-TrTh-WScvSimSumSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'),mnr2, ncol = 1, nrow = 2)
+
+#Plot correlations by analysis name
+pdf('plotanalysisout/flex/IRT/Correlations.pdf')
+for (name in names){
+	temp <- data %>%
+		filter(Analysis.Name == name) %>%
+		select(c('Number.Items','CORR.TrTh.WSc','CORR.TrTh.SimSumSc')) %>%
+		as_tibble() %>%
+		print()
+	plotdf <- melt(temp, id = 'Number.Items')
+
+	print(ggplot(data=plotdf, mapping=aes(x=Number.Items,y=value,group=variable,color=variable))+geom_smooth()+labs(title=paste0('Correlations For ',name))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(plotdf$Number.Items)-5,max(plotdf$Number.Items)+5))+scale_y_continuous(name='Correlation', n.breaks=10)+coord_cartesian(ylim=c(min(meandata$Mean.CORR.TrTh.WSc,meandata$Mean.CORR.TrTh.SimSumSc),1)))
+}
+dev.off()
 
 
 #Curious about runtime
