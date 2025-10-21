@@ -12,7 +12,7 @@ library(insight)#print_color function
 library(argparser)#anything parser related
 library(mirt)#IRT stuff
 library(ggplot2)#plot related
-library(directlabels)#used to add labels on plots when lots of lines are used together
+library(psych)#omega function
 
 #Adding argument parsers so that I can vary the scoring analysis from the command line
 parser <- arg_parser('Options for varying which analyses get updated with the additional calculation')
@@ -21,14 +21,14 @@ arg <- parse_args(parser)
 
 #Resetting argument parameters
 if ('All' %in% arg$names){
-	names <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','zerob','fcipost','fmcethpost','kin1dpdv1post')
+	names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipost','fmcethpost','kin1dpdv1post')
 }else {
 	names <- strsplit(arg$names,',')[[1]]
 }
 
 #Splitting datasets for stuff below
-outputs <- list('expgrow'=350, 'expdecay'=350, 'log'=350, 'logrev'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'noshape'=350, 'normalb'=350, 'zerob'=350, 'fcipost'=1, 'fmcethpost'=1,'kin1dpdv1'=1)
-sim <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear','neglinear','noshape','normalb','zerob')
+outputs <- list('expgrow'=350, 'expdecay'=350, 'logist'=350, 'reflogist'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'leftasym'=350, 'rightasym'=350, 'noshape'=350, 'split'=350, 'fcipost'=1, 'fmcethpost'=1,'kin1dpdv1'=1)
+sim <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split')
 ##############################################################################################################
 #################################################FUNCTIONS####################################################
 ##############################################################################################################
@@ -37,8 +37,7 @@ sim <- c('expgrow','expdecay','log','logrev','gaussian','invgaussian','poslinear
 ###################################################DATA#######################################################
 ##############################################################################################################
 
-#Collecting information of interest
-meansets <- list()
+#Adding new variables of interest
 for (name in names){
 	print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING ',name,' ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	#Collecting analysis outputs
@@ -63,39 +62,50 @@ for (name in names){
 
 		if (grepl('fci', name) | grepl('fmce', name) | grepl('kin1dpdv1',name)){
 			if (grepl('fci', name) & grepl('post', name)){
-				pardf <- read.csv(paste0('analysisout/summary/FCI/post/2PLpar-',nst,'.csv'))
+				data <- read.csv(paste0('realdata/FCI-post.csv'))
+				Item <- colnames(data)
 			}else if (grepl('fmceth', name) & grepl('post', name)){
-				pardf <- read.csv(paste0('analysisout/summary/FMCETh/post/2PLpar-',nst,'.csv'))
+				data <- read.csv(paste0('realdata/FMCETh-post.csv'))
+				Item <- colnames(data)
 			}else if (grepl('kin1dpdv1',name) & grepl('post', name)){
-				pardf <- read.csv(paste0('analysisout/summary/Kin1D-PD-Ver1/post/2PLpar-',nst,'.csv'))
+				data <- read.csv(paste0('realdata/Kin1D-PD-Ver1-post.csv'))
+				Item <- colnames(data)
 			}
 		}else {
-			pardf <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/',nit,'items','/',nst,'students','/2PLpar-',paste0(name,r),'.csv'))
+			data <- read.csv(paste0('simdata/flex/IRT/',name,'/',nit,'items','/',nst,'students/',paste0(name,r),'-Data.csv'))
+			Item <- colnames(data)
+			Item <- Item[!(Item %in% c('ID','Theta'))]
 		}
-		
-		corr <- cor(pardf$Est.Difficulty.2PL, pardf$Est.Discrimination.2PL, method = 'pearson')
-		addvec <- c(addvec, corr)
+	
+		if (!(name %in% sim)){	
+			w <- omega(data[,Item], nfactors = 3, fm = 'pa', poly = TRUE, rotate = 'oblimin', plot = FALSE)
+			print(w)
+			omega.h3 <- w$omega_h
+			print(paste0('Omega Hierarchical for the Full Exam: ',round(omega.h3,4)))
+			addvec <- c(addvec, omega.h3)
+		}
+
 	}
 
-	df$CORR.2PLDiff.2PLDisc <- addvec
-	if (name %in% sim){
-		df <- df[c('Number.Items', 'Number.Students.Original', 'Number.Students.Removed', 'Number.Run', 'Alpha', 'Model.RMSEA', 'Model.SRMSR', 'Model.TLI', 'Model.CFI', 'RMSE.Item.Discrimination', 'RMSE.Item.Difficulty', 'RMSE.Theta', 'RMSE.EstExpSc.SimSumSc', 'RMSE.EstExpSc.WSc', 'RMSE.WSc.SimSumSc', 'RMSE.TrExpSc.SimSumSc', 'RMSE.TrExpSc.WSc', 'RMSE.TrExpSc.EstExpSc', 'R2.EstTh.SimSumSc', 'R2.EstTh.WSc', 'R2.EstExpSc.SimSumSc', 'R2.EstExpSc.WSc', 'R2.TrTh.SimSumSc', 'R2.TrTh.WSc', 'R2.TrExpSc.SimSumSc', 'R2.TrExpSc.WSc', 'CORR.2PLDiff.2PLDisc', 'CORR.EstTh.SimSumSc', 'CORR.EstTh.WSc', 'CORR.EstTh.EstExpSc', 'CORR.SimSumSc.WSc', 'CORR.SimSumSc.EstExpSc', 'CORR.WScvEstExpSc', 'CORR.TrTh.TrExpSc', 'CORR.TrTh.EstTh', 'CORR.TrTh.SimSumSc', 'CORR.TrTh.WSc', 'CORR.TrTh.EstExpSc', 'CORR.TrExpSc.EstTh', 'CORR.TrExpSc.SimSumSc', 'CORR.TrExpSc.WSc', 'CORR.TrExpSc.EstExpSc')]
-	}else {
-		df <- df[c('Number.Items', 'Number.Students.Original', 'Number.Students.Removed', 'Number.Run', 'Alpha', 'Model.RMSEA', 'Model.SRMSR', 'Model.TLI', 'Model.CFI', 'RMSE.EstExpSc.SimSumSc', 'RMSE.EstExpSc.WSc', 'RMSE.WSc.SimSumSc', 'R2.EstTh.SimSumSc', 'R2.EstTh.WSc', 'R2.EstExpSc.SimSumSc', 'R2.EstExpSc.WSc', 'CORR.2PLDiff.2PLDisc', 'CORR.EstTh.SimSumSc', 'CORR.EstTh.WSc', 'CORR.EstTh.EstExpSc', 'CORR.SimSumSc.WSc', 'CORR.SimSumSc.EstExpSc', 'CORR.WScvEstExpSc')]
-	}
+	#df$Omega.h3 <- addvec
+	#if (name %in% sim){
+	#	df <- df[c('Number.Items', 'Number.Students.Original', 'Number.Students.Removed', 'Number.Run', 'Alpha', 'Omega.h3', 'Model.RMSEA', 'Model.SRMSR', 'Model.TLI', 'Model.CFI', 'RMSE.Item.Discrimination', 'RMSE.Item.Difficulty', 'RMSE.Theta', 'RMSE.EstExpSc.SimSumSc', 'RMSE.EstExpSc.WSc', 'RMSE.WSc.SimSumSc', 'RMSE.TrExpSc.SimSumSc', 'RMSE.TrExpSc.WSc', 'RMSE.TrExpSc.EstExpSc', 'R2.EstTh.SimSumSc', 'R2.EstTh.WSc', 'R2.EstExpSc.SimSumSc', 'R2.EstExpSc.WSc', 'R2.TrTh.SimSumSc', 'R2.TrTh.WSc', 'R2.TrExpSc.SimSumSc', 'R2.TrExpSc.WSc', 'CORR.2PLDiff.2PLDisc', 'CORR.EstTh.SimSumSc', 'CORR.EstTh.WSc', 'CORR.EstTh.EstExpSc', 'CORR.SimSumSc.WSc', 'CORR.SimSumSc.EstExpSc', 'CORR.WScvEstExpSc', 'CORR.TrTh.TrExpSc', 'CORR.TrTh.EstTh', 'CORR.TrTh.SimSumSc', 'CORR.TrTh.WSc', 'CORR.TrTh.EstExpSc', 'CORR.TrExpSc.EstTh', 'CORR.TrExpSc.SimSumSc', 'CORR.TrExpSc.WSc', 'CORR.TrExpSc.EstExpSc')]
+	#}else {
+	#	df <- df[c('Number.Items', 'Number.Students.Original', 'Number.Students.Removed', 'Number.Run', 'Omega.h3', 'Alpha', 'Model.RMSEA', 'Model.SRMSR', 'Model.TLI', 'Model.CFI', 'RMSE.EstExpSc.SimSumSc', 'RMSE.EstExpSc.WSc', 'RMSE.WSc.SimSumSc', 'R2.EstTh.SimSumSc', 'R2.EstTh.WSc', 'R2.EstExpSc.SimSumSc', 'R2.EstExpSc.WSc', 'CORR.2PLDiff.2PLDisc', 'CORR.EstTh.SimSumSc', 'CORR.EstTh.WSc', 'CORR.EstTh.EstExpSc', 'CORR.SimSumSc.WSc', 'CORR.SimSumSc.EstExpSc', 'CORR.WScvEstExpSc')]
+	#}
 	
 	#Rewriting Outputs with added column 
-	if (grepl('fci', name) | grepl('fmce', name) | grepl('kin1dpdv1',name)){
-		if (grepl('fci', name) & grepl('post', name)){
-			write.csv(df, paste0('analysisout/summary/FCI/post/AnalysisOutput1.csv'), row.names = FALSE)
-		}else if (grepl('fmceth', name) & grepl('post', name)){
-			write.csv(df, paste0('analysisout/summary/FMCETh/post/AnalysisOutput1.csv'), row.names = FALSE)
-		}else if (grepl('kin1dpdv1', name) & grepl('post', name)){
-			write.csv(df, paste0('analysisout/summary/Kin1D-PD-Ver1/post/AnalysisOutput1.csv'), row.names = FALSE)
-		}
-	}else {
-		write.csv(df, paste0('analysisout/summary/IRT/flex/',name,'/AnalysisOutput',paste0(outputs[name]),'.csv'), row.names = FALSE)
-	}
+	#if (grepl('fci', name) | grepl('fmce', name) | grepl('kin1dpdv1',name)){
+	#	if (grepl('fci', name) & grepl('post', name)){
+	#		write.csv(df, paste0('analysisout/summary/FCI/post/AnalysisOutput1.csv'), row.names = FALSE)
+	#	}else if (grepl('fmceth', name) & grepl('post', name)){
+	#		write.csv(df, paste0('analysisout/summary/FMCETh/post/AnalysisOutput1.csv'), row.names = FALSE)
+	#	}else if (grepl('kin1dpdv1', name) & grepl('post', name)){
+	#		write.csv(df, paste0('analysisout/summary/Kin1D-PD-Ver1/post/AnalysisOutput1.csv'), row.names = FALSE)
+	#	}
+	#}else {
+	#	write.csv(df, paste0('analysisout/summary/IRT/flex/',name,'/AnalysisOutput',paste0(outputs[name]),'.csv'), row.names = FALSE)
+	#}
 
 }
 

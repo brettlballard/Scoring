@@ -208,7 +208,6 @@ if (arg$run){
 #Data to store over many potential runs
 nItems <- c()
 nStud <- c()
-nStudRem <- c()
 RunNum <- c()
 alpha <- c()
 modelRMSEA <- c()
@@ -384,21 +383,12 @@ for (nit in numitems){
 			print(coeff)
 
 			#Save estimated thetas
-			scores2pl <- fscores(irt2plmodel, method = 'ML', full.scores = TRUE, full.scores.SE = TRUE) 
+			scores2pl <- fscores(irt2plmodel, method = 'EAP', full.scores = TRUE, full.scores.SE = TRUE) 
 			est.theta <- scores2pl[,1]
 			data$Est.Theta <- est.theta
 			if (test == 'IRT'){
 				data$True.Theta <- df$Theta
 			}
-
-			#Removing students with Inf or -Inf from the dataset
-			data <- data %>%
-				filter(Est.Theta != Inf) %>%
-				filter(Est.Theta != -Inf)
-			npart <- nrow(data)	
-			
-			#Save data
-			nStudRem <- c(nStudRem, (nst-nrow(data)))
 
 			#Making dataframe to save IRT parameters
 			parameters <- unlist(coeff[1])
@@ -814,9 +804,9 @@ print_color('===============================Analysis Output=====================
 print_color('============================================================================\n','bviolet')
 #Outputting saved data
 if (test == 'IRT'){
-	out <- data.frame('Number.Items' = nItems, 'Number.Students.Original' = nStud, 'Number.Students.Removed' = nStudRem, 'Number.Run' = RunNum, 'Alpha' = alpha, 'Model.RMSEA' = modelRMSEA, 'Model.SRMSR' = modelSRMSR, 'Model.TLI' = modelTLI, 'Model.CFI' = modelCFI, 'RMSE.Item.Discrimination' = RMSEa, 'RMSE.Item.Difficulty' = RMSEb, 'RMSE.Theta' = RMSEth, 'RMSE.EstExpSc.SimSumSc' = RMSEEstExpScvSimSumSc, 'RMSE.EstExpSc.WSc' = RMSEEstExpScvWSc, 'RMSE.WSc.SimSumSc' = RMSEWScvSimSumSc, 'RMSE.TrExpSc.SimSumSc' = RMSETrExpScvSimSumSc, 'RMSE.TrExpSc.WSc' = RMSETrExpScvWSc, 'RMSE.TrExpSc.EstExpSc' = RMSETrExpScvEstExpSc, 'R2.EstTh.SimSumSc' = R2EstThbySimSumSc, 'R2.EstTh.WSc' = R2EstThbyWSc, 'R2.EstExpSc.SimSumSc' = R2EstExpScbySimSumSc, 'R2.EstExpSc.WSc' = R2EstExpScbyWSc, 'R2.TrTh.SimSumSc' = R2TrThbySimSumSc, 'R2.TrTh.WSc' = R2TrThbyWSc, 'R2.TrExpSc.SimSumSc' = R2TrExpScbySimSumSc, 'R2.TrExpSc.WSc' = R2TrExpScbyWSc, 'CORR.2PLDiff.2PLDisc' = Corr2PLDiffv2PLDisc, 'CORR.EstTh.SimSumSc' = CorrEstThvSimSumSc, 'CORR.EstTh.WSc' = CorrEstThvWSc, 'CORR.EstTh.EstExpSc' = CorrEstThvEstExpSc, 'CORR.SimSumSc.WSc' = CorrSimSumScvWSc, 'CORR.SimSumSc.EstExpSc' = CorrSimSumScvEstExpSc, 'CORR.WScvEstExpSc' = CorrWScvEstExpSc, 'CORR.TrTh.TrExpSc' = CorrTrThvTrExpSc, 'CORR.TrTh.EstTh' = CorrTrThvEstTh, 'CORR.TrTh.SimSumSc' = CorrTrThvSimSumSc, 'CORR.TrTh.WSc' = CorrTrThvWSc, 'CORR.TrTh.EstExpSc' = CorrTrThvEstExpSc, 'CORR.TrExpSc.EstTh' = CorrTrExpScvEstTh, 'CORR.TrExpSc.SimSumSc' = CorrTrExpScvSimSumSc, 'CORR.TrExpSc.WSc' = CorrTrExpScvWSc, 'CORR.TrExpSc.EstExpSc' = CorrTrExpScvEstExpSc)
+	out <- data.frame('Number.Items' = nItems, 'Number.Students.Original' = nStud, 'Number.Run' = RunNum, 'Alpha' = alpha, 'Model.RMSEA' = modelRMSEA, 'Model.SRMSR' = modelSRMSR, 'Model.TLI' = modelTLI, 'Model.CFI' = modelCFI, 'RMSE.Item.Discrimination' = RMSEa, 'RMSE.Item.Difficulty' = RMSEb, 'RMSE.Theta' = RMSEth, 'RMSE.EstExpSc.SimSumSc' = RMSEEstExpScvSimSumSc, 'RMSE.EstExpSc.WSc' = RMSEEstExpScvWSc, 'RMSE.WSc.SimSumSc' = RMSEWScvSimSumSc, 'RMSE.TrExpSc.SimSumSc' = RMSETrExpScvSimSumSc, 'RMSE.TrExpSc.WSc' = RMSETrExpScvWSc, 'RMSE.TrExpSc.EstExpSc' = RMSETrExpScvEstExpSc, 'R2.EstTh.SimSumSc' = R2EstThbySimSumSc, 'R2.EstTh.WSc' = R2EstThbyWSc, 'R2.EstExpSc.SimSumSc' = R2EstExpScbySimSumSc, 'R2.EstExpSc.WSc' = R2EstExpScbyWSc, 'R2.TrTh.SimSumSc' = R2TrThbySimSumSc, 'R2.TrTh.WSc' = R2TrThbyWSc, 'R2.TrExpSc.SimSumSc' = R2TrExpScbySimSumSc, 'R2.TrExpSc.WSc' = R2TrExpScbyWSc, 'CORR.2PLDiff.2PLDisc' = Corr2PLDiffv2PLDisc, 'CORR.EstTh.SimSumSc' = CorrEstThvSimSumSc, 'CORR.EstTh.WSc' = CorrEstThvWSc, 'CORR.EstTh.EstExpSc' = CorrEstThvEstExpSc, 'CORR.SimSumSc.WSc' = CorrSimSumScvWSc, 'CORR.SimSumSc.EstExpSc' = CorrSimSumScvEstExpSc, 'CORR.WScvEstExpSc' = CorrWScvEstExpSc, 'CORR.TrTh.TrExpSc' = CorrTrThvTrExpSc, 'CORR.TrTh.EstTh' = CorrTrThvEstTh, 'CORR.TrTh.SimSumSc' = CorrTrThvSimSumSc, 'CORR.TrTh.WSc' = CorrTrThvWSc, 'CORR.TrTh.EstExpSc' = CorrTrThvEstExpSc, 'CORR.TrExpSc.EstTh' = CorrTrExpScvEstTh, 'CORR.TrExpSc.SimSumSc' = CorrTrExpScvSimSumSc, 'CORR.TrExpSc.WSc' = CorrTrExpScvWSc, 'CORR.TrExpSc.EstExpSc' = CorrTrExpScvEstExpSc)
 }else {
-	out <- data.frame('Number.Items' = nItems, 'Number.Students.Original' = nStud, 'Number.Students.Removed' = nStudRem, 'Number.Run' = RunNum, 'Alpha' = alpha, 'Model.RMSEA' = modelRMSEA, 'Model.SRMSR' = modelSRMSR, 'Model.TLI' = modelTLI, 'Model.CFI' = modelCFI, 'RMSE.EstExpSc.SimSumSc' = RMSEEstExpScvSimSumSc, 'RMSE.EstExpSc.WSc' = RMSEEstExpScvWSc, 'RMSE.WSc.SimSumSc' = RMSEWScvSimSumSc, 'R2.EstTh.SimSumSc' = R2EstThbySimSumSc, 'R2.EstTh.WSc' = R2EstThbyWSc, 'R2.EstExpSc.SimSumSc' = R2EstExpScbySimSumSc, 'R2.EstExpSc.WSc' = R2EstExpScbyWSc, 'CORR.2PLDiff.2PLDisc' = Corr2PLDiffv2PLDisc, 'CORR.EstTh.SimSumSc' = CorrEstThvSimSumSc, 'CORR.EstTh.WSc' = CorrEstThvWSc, 'CORR.EstTh.EstExpSc' = CorrEstThvEstExpSc, 'CORR.SimSumSc.WSc' = CorrSimSumScvWSc, 'CORR.SimSumSc.EstExpSc' = CorrSimSumScvEstExpSc, 'CORR.WScvEstExpSc' = CorrWScvEstExpSc)
+	out <- data.frame('Number.Items' = nItems, 'Number.Students.Original' = nStud, 'Number.Run' = RunNum, 'Alpha' = alpha, 'Model.RMSEA' = modelRMSEA, 'Model.SRMSR' = modelSRMSR, 'Model.TLI' = modelTLI, 'Model.CFI' = modelCFI, 'RMSE.EstExpSc.SimSumSc' = RMSEEstExpScvSimSumSc, 'RMSE.EstExpSc.WSc' = RMSEEstExpScvWSc, 'RMSE.WSc.SimSumSc' = RMSEWScvSimSumSc, 'R2.EstTh.SimSumSc' = R2EstThbySimSumSc, 'R2.EstTh.WSc' = R2EstThbyWSc, 'R2.EstExpSc.SimSumSc' = R2EstExpScbySimSumSc, 'R2.EstExpSc.WSc' = R2EstExpScbyWSc, 'CORR.2PLDiff.2PLDisc' = Corr2PLDiffv2PLDisc, 'CORR.EstTh.SimSumSc' = CorrEstThvSimSumSc, 'CORR.EstTh.WSc' = CorrEstThvWSc, 'CORR.EstTh.EstExpSc' = CorrEstThvEstExpSc, 'CORR.SimSumSc.WSc' = CorrSimSumScvWSc, 'CORR.SimSumSc.EstExpSc' = CorrSimSumScvEstExpSc, 'CORR.WScvEstExpSc' = CorrWScvEstExpSc)
 }
 
 #Outputting to a file for later analyses
@@ -831,7 +821,7 @@ if (tt == 'flex'){
 
 #Summarizing data collected over many runs
 if (niter > 1){
-	summcols <- c('Number.Students.Removed', 'Alpha', 'Model.RMSEA', 'Model.SRMSR', 'Model.TLI', 'Model.CFI', 'RMSE.Item.Discrimination', 'RMSE.Item.Difficulty', 'RMSE.Theta', 'RMSE.EstExpSc.SimSumSc', 'RMSE.EstExpSc.WSc', 'RMSE.WSc.SimSumSc', 'RMSE.TrExpSc.SimSumSc', 'RMSE.TrExpSc.WSc', 'RMSE.TrExpSc.EstExpSc', 'R2.EstTh.SimSumSc', 'R2.EstTh.WSc', 'R2.EstExpSc.SimSumSc', 'R2.EstExpSc.WSc', 'R2.TrTh.SimSumSc', 'R2.TrTh.WSc', 'R2.TrExpSc.SimSumSc', 'R2.TrExpSc.WSc', 'CORR.2PLDiff.2PLDisc', 'CORR.EstTh.SimSumSc', 'CORR.EstTh.WSc', 'CORR.EstTh.EstExpSc', 'CORR.SimSumSc.WSc', 'CORR.SimSumSc.EstExpSc', 'CORR.WScvEstExpSc', 'CORR.TrTh.TrExpSc', 'CORR.TrTh.EstTh', 'CORR.TrTh.SimSumSc', 'CORR.TrTh.WSc', 'CORR.TrTh.EstExpSc', 'CORR.TrExpSc.EstTh', 'CORR.TrExpSc.SimSumSc', 'CORR.TrExpSc.WSc', 'CORR.TrExpSc.EstExpSc')
+	summcols <- c('Alpha', 'Model.RMSEA', 'Model.SRMSR', 'Model.TLI', 'Model.CFI', 'RMSE.Item.Discrimination', 'RMSE.Item.Difficulty', 'RMSE.Theta', 'RMSE.EstExpSc.SimSumSc', 'RMSE.EstExpSc.WSc', 'RMSE.WSc.SimSumSc', 'RMSE.TrExpSc.SimSumSc', 'RMSE.TrExpSc.WSc', 'RMSE.TrExpSc.EstExpSc', 'R2.EstTh.SimSumSc', 'R2.EstTh.WSc', 'R2.EstExpSc.SimSumSc', 'R2.EstExpSc.WSc', 'R2.TrTh.SimSumSc', 'R2.TrTh.WSc', 'R2.TrExpSc.SimSumSc', 'R2.TrExpSc.WSc', 'CORR.2PLDiff.2PLDisc', 'CORR.EstTh.SimSumSc', 'CORR.EstTh.WSc', 'CORR.EstTh.EstExpSc', 'CORR.SimSumSc.WSc', 'CORR.SimSumSc.EstExpSc', 'CORR.WScvEstExpSc', 'CORR.TrTh.TrExpSc', 'CORR.TrTh.EstTh', 'CORR.TrTh.SimSumSc', 'CORR.TrTh.WSc', 'CORR.TrTh.EstExpSc', 'CORR.TrExpSc.EstTh', 'CORR.TrExpSc.SimSumSc', 'CORR.TrExpSc.WSc', 'CORR.TrExpSc.EstExpSc')
 	means <- c()
 	stderr <- c()
 	for (col in summcols){
