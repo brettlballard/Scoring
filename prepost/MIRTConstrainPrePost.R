@@ -23,7 +23,9 @@ parser <- add_argument(parser, "--data", help = 'data being used; options are in
 #FCI pre & post
 #FMCE pre & post
 #FMCE Thornton pre & post
-#Kin1D-PD-Ver1 pre & post
+#K1 pre & post
+#CSEMark pre & post
+#CSEMwvu pre & post
 #
 parser <- add_argument(parser, "--rmitems", help = 'items being removed',nargs='*',default=c('NULL'))
 parser <- add_argument(parser, "--useitems", help = 'items being used',nargs='*',default=c('NULL'))
@@ -39,9 +41,15 @@ if (arg$data == 'FCI'){
 }else if (arg$data == 'FMCETh'){
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING FMCETh ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	test <- 'FMCETh'
-}else if (arg$data == 'Kin1D-PD-Ver1'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING KIN-1D-VER1 ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'Kin1D-PD-Ver1'
+}else if (arg$data == 'K1'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1 ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'K1'
+}else if (arg$data == 'CSEMark'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM ARK ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMark'
+}else if (arg$data == 'CSEMwvu'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM WVU ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMwvu'
 }else {
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!INVALID DATA ARGUMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bred')
         break
@@ -62,7 +70,7 @@ FixParameters <- function(parmodel, fixed.pars=c('a1','d'), nitems){
 	startvec <- c()
 	fixedvec <- c()
 	for (fixpar in fixed.pars){
-		fixedvec <- c(fixedvec,paste0('(','1-',nit,',',fixpar,')'))	
+		fixedvec <- c(fixedvec,paste0('(','1-',nitems,',',fixpar,')'))	
 		for (i in 1:nitems){
 			pars <- coeff[i][[1]] 
 			startvec <- c(startvec,paste0('(',i,',',fixpar,',',pars['par',fixpar],')'))		

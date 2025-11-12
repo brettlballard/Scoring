@@ -25,7 +25,9 @@ parser <- add_argument(parser, "--data", help = 'data being used; options are in
 #FCI pre & post
 #FMCE pre & post
 #FMCE Thornton pre & post
-#Kin1D-PD-Ver1 pre & post
+#K1 pre & post
+#CSEMwvu pre & post
+#CSEMark pre & post
 #
 parser <- add_argument(parser, "--name", help = 'name for sim flex dataset',nargs='*',default='TEST')
 parser <- add_argument(parser, "--nitems", help = 'number of items being investigated: format input as begin,end,increment',nargs='*',default=c(10,10,0))
@@ -93,13 +95,29 @@ if (arg$data == 'NOISEfixed'){
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING FMCETh POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	test <- 'FMCETh'
 	tt <- 'post'
-}else if (arg$data == 'Kin1D-PD-Ver1pre'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!RUNNING KIN-1D-VER1 PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'Kin1D-PD-Ver1'
+}else if (arg$data == 'K1pre'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1 PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'K1'
 	tt <- 'pre'
-}else if (arg$data == 'Kin1D-PD-Ver1post'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!RUNNING KIN-1D-VER1 POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'Kin1D-PD-Ver1'
+}else if (arg$data == 'K1post'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1 POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'K1'
+	tt <- 'post'
+}else if (arg$data == 'CSEMarkpre'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM ARK PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMark'
+	tt <- 'pre'
+}else if (arg$data == 'CSEMarkpost'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM ARK POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMark'
+	tt <- 'post'
+}else if (arg$data == 'CSEMwvupre'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM WVU PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMwvu'
+	tt <- 'pre'
+}else if (arg$data == 'CSEMwvupost'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM WVU POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMwvu'
 	tt <- 'post'
 }else {
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!INVALID DATA ARGUMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bred')
@@ -196,7 +214,7 @@ WSCORE <- function(itemscores, weights){
 ##############################################################################################################
 
 #Using these to help with data retrieval
-realdata <- c('FCIpre','FCIpost','FMCEpre','FMCEpost','FMCEThpre','FMCEThpost','Kin1D-PD-Ver1pre','Kin1D-PD-Ver1post')
+realdata <- c('FCIpre','FCIpost','FMCEpre','FMCEpost','FMCEThpre','FMCEThpost','K1pre','K1post','CSEMarkpre','CSEMarkpost','CSEMwvupre','CSEMwvupost')
 simdata <- c('NOISEfixed','NOISEflex','CTTfixed','CTTflex','IRTfixed','IRTflex')
 
 if (arg$run){
@@ -576,7 +594,11 @@ for (nit in numitems){
 			if (tt == 'flex'){
 				write.csv(scoreout, paste0('analysisout/summary/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/Scores-',paste0(name,r),'.csv'), row.names = FALSE)
 			}else {
-				write.csv(scoreout, paste0('analysisout/summary/',test,'/',tt,'/Scores-',nst,'.csv'), row.names = FALSE)
+				if (tt == 'pre' & arg$postweights){
+					write.csv(scoreout, paste0('analysisout/summary/',test,'/',tt,'/Scores-',nst,'wPOSTWEIGHTS.csv'), row.names = FALSE)
+				}else {
+					write.csv(scoreout, paste0('analysisout/summary/',test,'/',tt,'/Scores-',nst,'.csv'), row.names = FALSE)
+				}
 			}
 
 			#Looking at R2 change between adding the different scores
@@ -667,7 +689,11 @@ for (nit in numitems){
 			if (tt == 'flex'){
 				pdf(paste0('analysisout/plots/',test,'/',tt,'/',name,'/',nit,'items','/',nst,'students','/ItemICCs-',paste0(name,r),'.pdf'))
 			}else {
-				pdf(paste0('analysisout/plots/',test,'/',tt,'/ItemICCs-',nst,'.pdf'))
+				if (tt == 'pre' & arg$postweights){
+					pdf(paste0('analysisout/plots/',test,'/',tt,'/ItemICCs-',nst,'wPOSTWEIGHTS.pdf'))
+				}else {
+					pdf(paste0('analysisout/plots/',test,'/',tt,'/ItemICCs-',nst,'.pdf'))
+				}
 			}
 			print(ggplot(data=data, aes(x=SimSum.Score))+geom_histogram(alpha=.5)+labs(title='SimSum Score Distribution'))
 			print(ggplot(data=data, aes(x=round(Est.ExpScore,0)))+geom_histogram(alpha=.5)+labs(title='2PL Expected Score Distribution'))
@@ -816,7 +842,11 @@ niter <- nrow(out)
 if (tt == 'flex'){
 	write.csv(out, paste0('analysisout/summary/',test,'/',tt,'/',name,'/AnalysisOutput',niter,'.csv'), row.names = FALSE)
 }else {
-	write.csv(out, paste0('analysisout/summary/',test,'/',tt,'/AnalysisOutput',niter,'.csv'), row.names = FALSE)
+	if (tt == 'pre' & arg$postweights){
+		write.csv(out, paste0('analysisout/summary/',test,'/',tt,'/AnalysisOutput',niter,'wPOSTWEIGHTS.csv'), row.names = FALSE)
+	}else {
+		write.csv(out, paste0('analysisout/summary/',test,'/',tt,'/AnalysisOutput',niter,'.csv'), row.names = FALSE)
+	}
 }
 
 #Summarizing data collected over many runs

@@ -17,17 +17,22 @@ library(directlabels)#used to add labels on plots when lots of lines are used to
 #Adding argument parsers so that I can vary the scoring analysis from the command line
 parser <- arg_parser('Options for varying the correlational analysis for a run of scoring analyses')
 parser <- add_argument(parser, "--names", help = 'name for set of runs being investigated',nargs='*',default=c('All'))
+parser <- add_argument(parser, "--inclPre", help = 'include pretests in all run',nargs='*',default=FALSE)
 arg <- parse_args(parser)
 
 #Resetting argument parameters
 if ('All' %in% arg$names){
-	names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipost','fmcethpost','kin1dpdv1post')
+	if (arg$inclPre){
+		names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipre','fcipost','fmcethpre','fmcethpost','k1pre','k1post','csemarkpre','csemarkpost','csemwvupre','csemwvupost')
+	}else{
+		names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipost','fmcethpost','k1post','csemarkpost','csemwvupost')
+	}
 }else {
 	names <- strsplit(arg$names,',')[[1]]
 }
 
 #Splitting datasets for stuff below
-outputs <- list('expgrow'=350, 'expdecay'=350, 'logist'=350, 'reflogist'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'leftasym'=350, 'rightasym'=350, 'noshape'=350, 'split'=350, 'fcipost'=1, 'fmcethpost'=1,'kin1dpdv1'=1)
+outputs <- list('expgrow'=350, 'expdecay'=350, 'logist'=350, 'reflogist'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'leftasym'=350, 'rightasym'=350, 'noshape'=350, 'split'=350)
 itemiter <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split')
 sim <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split')
 ggshapes <- c(0:14,32:127)
@@ -44,13 +49,17 @@ meansets <- list()
 for (name in names){
 	print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING ',name,' ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	#Collecting analysis outputs
-	if (grepl('fci', name) | grepl('fmce', name) | grepl('kin1dpdv1',name)){
+	if (grepl('fci', name) | grepl('fmce', name) | grepl('k1',name) | grepl('csem',name)){
 		if (grepl('fci', name) & grepl('post', name)){
 			df <- read.csv(paste0('analysisout/summary/FCI/post/AnalysisOutput1.csv'))
 		}else if (grepl('fmceth', name) & grepl('post', name)){
 			df <- read.csv(paste0('analysisout/summary/FMCETh/post/AnalysisOutput1.csv'))
-		}else if (grepl('kin1dpdv1', name) & grepl('post', name)){
-			df <- read.csv(paste0('analysisout/summary/Kin1D-PD-Ver1/post/AnalysisOutput1.csv'))
+		}else if (grepl('k1', name) & grepl('post', name)){
+			df <- read.csv(paste0('analysisout/summary/K1/post/AnalysisOutput1.csv'))
+		}else if (grepl('csemark', name) & grepl('post', name)){
+			df <- read.csv(paste0('analysisout/summary/CSEMark/post/AnalysisOutput1.csv'))
+		}else if (grepl('csemwvu', name) & grepl('post', name)){
+			df <- read.csv(paste0('analysisout/summary/CSEMwvu/post/AnalysisOutput1.csv'))
 		}
 	}else {
 		df <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/AnalysisOutput',paste0(outputs[name]),'.csv'))
@@ -60,11 +69,7 @@ for (name in names){
 	nrun <- unique(df$Number.Run)
 	
 	#Will use more runs later but reducing to just the thirty item ones now
-	if (grepl('fci',name)){
-		nitems <- 29
-	}else if (grepl('kin1dpdv1',name)){
-		nitems <- 20 
-	}else {
+	if (name %in% sim){
 		nitems <- 30
 	}
 
@@ -73,13 +78,17 @@ for (name in names){
 		for (nst in nstud){
 			for (r in nrun){
 			
-				if (grepl('fci', name) | grepl('fmce', name) | grepl('kin1dpdv1',name)){
+				if (grepl('fci', name) | grepl('fmce', name) | grepl('k1',name) | grepl('csem',name)){
 					if (grepl('fci', name) & grepl('post', name)){
 						scoredf <- read.csv(paste0('analysisout/summary/FCI/post/Scores-',nst,'.csv'))
 					}else if (grepl('fmceth', name) & grepl('post', name)){
 						scoredf <- read.csv(paste0('analysisout/summary/FMCETh/post/Scores-',nst,'.csv'))
-					}else if (grepl('kin1dpdv1',name) & grepl('post', name)){
-						scoredf <- read.csv(paste0('analysisout/summary/Kin1D-PD-Ver1/post/Scores-',nst,'.csv'))
+					}else if (grepl('k1',name) & grepl('post', name)){
+						scoredf <- read.csv(paste0('analysisout/summary/K1/post/Scores-',nst,'.csv'))
+					}else if (grepl('csemark',name) & grepl('post', name)){
+						scoredf <- read.csv(paste0('analysisout/summary/CSEMark/post/Scores-',nst,'.csv'))
+					}else if (grepl('csemwvu',name) & grepl('post', name)){
+						scoredf <- read.csv(paste0('analysisout/summary/CSEMwvu/post/Scores-',nst,'.csv'))
 					}
 				}else {
 					scoredf <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/',nit,'items','/',nst,'students','/Scores-',paste0(name,r),'.csv'))
@@ -102,21 +111,21 @@ for (name in names){
 				meansets <- append(meansets, list(meandf))
 
 				#Plotting things for each individually
-				if (grepl('fci', name) | grepl('fmce', name) | grepl('kin1dpdv1',name)){
+				if (grepl('fci', name) | grepl('fmce', name) | grepl('k1',name) | grepl('csem',name)){
 					if (!dir.exists(paste0('comparescoresout/',name,'/'))){dir.create(paste0('comparescoresout/',name,'/'), recursive = TRUE)}
 				}else {	
 					if (!dir.exists(paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'))){dir.create(paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'), recursive = TRUE)}
 				}
 		
 				ggplot(data=scoredf, mapping=aes(x=SimSum.Perc,y=WS.Perc))+geom_point(size=1)+labs(title=paste0('Weighted Score vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Weighted Score', n.breaks=10, limits=c(0,1))+annotate('segment', x=0, y=0, xend=1, yend=1, colour='blue', linetype='dashed')+geom_line(data=meandf, aes(x=SimSum.Perc,y=Mean.WS.Perc), color='red')
-				if (grepl('fci', name) | grepl('fmce', name) | grepl('kin1dpdv1',name)){
+				if (grepl('fci', name) | grepl('fmce', name) | grepl('k1',name) | grepl('csem',name)){
 					ggsave(file=paste0('WeightedScvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/'))
 				}else {
 					ggsave(file=paste0('WeightedScvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'))
 				}
 				
 				ggplot(data=scoredf, mapping=aes(x=SimSum.Perc,y=Percent.Difference))+geom_point(size=1)+labs(title=paste0('Percent Difference vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Percent Difference: Weighted Score - SimSum Score', n.breaks=10)+annotate('segment', x = 0, xend = 1, y=0, colour='blue', linetype='dashed')+geom_line(data=meandf, aes(x=SimSum.Perc,y=Mean.Percent.Difference), color='red')
-				if (grepl('fci', name) | grepl('fmce', name) | grepl('kin1dpdv1',name)){
+				if (grepl('fci', name) | grepl('fmce', name) | grepl('k1',name) | grepl('csem',name)){
 					ggsave(file=paste0('PercDiffvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/'))
 				}else {
 					ggsave(file=paste0('PercDiffvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'))
