@@ -23,9 +23,9 @@ arg <- parse_args(parser)
 #Resetting argument parameters
 if ('All' %in% arg$names){
 	if (arg$inclPre){
-		names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipre','fcipost','fmcethpre','fmcethpost','k1pre','k1post','csemarkpre','csemarkpost','csemwvupre','csemwvupost')
+		names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipre','fcipost','fmcethpre','fmcethpost','k1-20pre','k1-20post','k1-7pre','k1-7post','csemsam1pre','csemsam1post','csemsam2pre','csemsam2post')
 	}else{
-		names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipost','fmcethpost','k1post','csemarkpost','csemwvupost')
+		names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipost','fmcethpost','k1-20post','k1-7post','csemsam1post','csemsam2post')
 	}
 }else {
 	names <- strsplit(arg$names,',')[[1]]
@@ -49,17 +49,19 @@ meansets <- list()
 for (name in names){
 	print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING ',name,' ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	#Collecting analysis outputs
-	if (grepl('fci', name) | grepl('fmce', name) | grepl('k1',name) | grepl('csem',name)){
+	if (grepl('fci', name) | grepl('fmce', name) | grepl('k1-20',name) | grepl('k1-7',name) | grepl('csem',name)){
 		if (grepl('fci', name) & grepl('post', name)){
 			df <- read.csv(paste0('analysisout/summary/FCI/post/AnalysisOutput1.csv'))
 		}else if (grepl('fmceth', name) & grepl('post', name)){
 			df <- read.csv(paste0('analysisout/summary/FMCETh/post/AnalysisOutput1.csv'))
-		}else if (grepl('k1', name) & grepl('post', name)){
-			df <- read.csv(paste0('analysisout/summary/K1/post/AnalysisOutput1.csv'))
-		}else if (grepl('csemark', name) & grepl('post', name)){
-			df <- read.csv(paste0('analysisout/summary/CSEMark/post/AnalysisOutput1.csv'))
-		}else if (grepl('csemwvu', name) & grepl('post', name)){
-			df <- read.csv(paste0('analysisout/summary/CSEMwvu/post/AnalysisOutput1.csv'))
+		}else if (grepl('k1-20', name) & grepl('post', name)){
+			df <- read.csv(paste0('analysisout/summary/K1-20/post/AnalysisOutput1.csv'))
+		}else if (grepl('k1-7', name) & grepl('post', name)){
+			df <- read.csv(paste0('analysisout/summary/K1-7/post/AnalysisOutput1.csv'))
+		}else if (grepl('csemsam1', name) & grepl('post', name)){
+			df <- read.csv(paste0('analysisout/summary/CSEMsam1/post/AnalysisOutput1.csv'))
+		}else if (grepl('csemsam2', name) & grepl('post', name)){
+			df <- read.csv(paste0('analysisout/summary/CSEMsam2/post/AnalysisOutput1.csv'))
 		}
 	}else {
 		df <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/AnalysisOutput',paste0(outputs[name]),'.csv'))
@@ -83,12 +85,14 @@ for (name in names){
 						scoredf <- read.csv(paste0('analysisout/summary/FCI/post/Scores-',nst,'.csv'))
 					}else if (grepl('fmceth', name) & grepl('post', name)){
 						scoredf <- read.csv(paste0('analysisout/summary/FMCETh/post/Scores-',nst,'.csv'))
-					}else if (grepl('k1',name) & grepl('post', name)){
-						scoredf <- read.csv(paste0('analysisout/summary/K1/post/Scores-',nst,'.csv'))
-					}else if (grepl('csemark',name) & grepl('post', name)){
-						scoredf <- read.csv(paste0('analysisout/summary/CSEMark/post/Scores-',nst,'.csv'))
-					}else if (grepl('csemwvu',name) & grepl('post', name)){
-						scoredf <- read.csv(paste0('analysisout/summary/CSEMwvu/post/Scores-',nst,'.csv'))
+					}else if (grepl('k1-20',name) & grepl('post', name)){
+						scoredf <- read.csv(paste0('analysisout/summary/K1-20/post/Scores-',nst,'.csv'))
+					}else if (grepl('k1-7',name) & grepl('post', name)){
+						scoredf <- read.csv(paste0('analysisout/summary/K1-7/post/Scores-',nst,'.csv'))
+					}else if (grepl('csemsam1',name) & grepl('post', name)){
+						scoredf <- read.csv(paste0('analysisout/summary/CSEMsam1/post/Scores-',nst,'.csv'))
+					}else if (grepl('csemsam2',name) & grepl('post', name)){
+						scoredf <- read.csv(paste0('analysisout/summary/CSEMsam2/post/Scores-',nst,'.csv'))
 					}
 				}else {
 					scoredf <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/',nit,'items','/',nst,'students','/Scores-',paste0(name,r),'.csv'))

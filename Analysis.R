@@ -18,6 +18,7 @@ library(ggrepel)#geom_text_repel
 #Adding argument parsers so that I can vary the scoring analysis from the command line
 parser <- arg_parser('Options for varying the run of the scoring analysis')
 parser <- add_argument(parser, "--data", help = 'data being used; options are in the code',nargs='*',default='IRTflex')
+parser <- add_argument(parser, "--postweights", help = 'posttest weights being used for weighted score in real data when TRUE',nargs='*',default=TRUE)
 #
 #NOISE fixed & flex
 #CTT fixed & flex
@@ -25,9 +26,10 @@ parser <- add_argument(parser, "--data", help = 'data being used; options are in
 #FCI pre & post
 #FMCE pre & post
 #FMCE Thornton pre & post
-#K1 pre & post
-#CSEMwvu pre & post
-#CSEMark pre & post
+#K1-20 pre & post
+#K1-7 pre & post
+#CSEMsam1 pre & post
+#CSEMsam2 pre & post
 #
 parser <- add_argument(parser, "--name", help = 'name for sim flex dataset',nargs='*',default='TEST')
 parser <- add_argument(parser, "--nitems", help = 'number of items being investigated: format input as begin,end,increment',nargs='*',default=c(10,10,0))
@@ -36,7 +38,6 @@ parser <- add_argument(parser, "--run", help = 'running in run mode when TRUE',n
 parser <- add_argument(parser, "--nrun", help = 'number of runs when in run mode',nargs='*',default=10)
 parser <- add_argument(parser, "--rmitems", help = 'items being removed',nargs='*',default=c('NULL'))
 parser <- add_argument(parser, "--useitems", help = 'items being used',nargs='*',default=c('NULL'))
-parser <- add_argument(parser, "--postweights", help = 'posttest weights being used for weighted score in real data when TRUE',nargs='*',default=TRUE)
 arg <- parse_args(parser)
 
 #Turning multiple input arguments into vectors
@@ -95,29 +96,37 @@ if (arg$data == 'NOISEfixed'){
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING FMCETh POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	test <- 'FMCETh'
 	tt <- 'post'
-}else if (arg$data == 'K1pre'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1 PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'K1'
+}else if (arg$data == 'K1-20pre'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1-20 PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'K1-20'
 	tt <- 'pre'
-}else if (arg$data == 'K1post'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1 POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'K1'
+}else if (arg$data == 'K1-20post'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1-20 POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'K1-20'
 	tt <- 'post'
-}else if (arg$data == 'CSEMarkpre'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM ARK PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'CSEMark'
+}else if (arg$data == 'K1-7pre'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1-7 PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'K1-7'
 	tt <- 'pre'
-}else if (arg$data == 'CSEMarkpost'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM ARK POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'CSEMark'
+}else if (arg$data == 'K1-7post'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1-7 POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'K1-7'
 	tt <- 'post'
-}else if (arg$data == 'CSEMwvupre'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM WVU PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'CSEMwvu'
+}else if (arg$data == 'CSEMsam1pre'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!RUNNING CSEM SAMPLE 1 PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMsam1'
 	tt <- 'pre'
-}else if (arg$data == 'CSEMwvupost'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM WVU POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'CSEMwvu'
+}else if (arg$data == 'CSEMsam1post'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!RUNNING CSEM SAMPLE 1 POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMsam1'
+	tt <- 'post'
+}else if (arg$data == 'CSEMsam2pre'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!RUNNING CSEM SAMPLE 2 PRE ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMsam2'
+	tt <- 'pre'
+}else if (arg$data == 'CSEMsam2post'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!RUNNING CSEM SAMPLE 2 POST ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMsam2'
 	tt <- 'post'
 }else {
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!INVALID DATA ARGUMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bred')
@@ -214,7 +223,7 @@ WSCORE <- function(itemscores, weights){
 ##############################################################################################################
 
 #Using these to help with data retrieval
-realdata <- c('FCIpre','FCIpost','FMCEpre','FMCEpost','FMCEThpre','FMCEThpost','K1pre','K1post','CSEMarkpre','CSEMarkpost','CSEMwvupre','CSEMwvupost')
+realdata <- c('FCIpre','FCIpost','FMCEpre','FMCEpost','FMCEThpre','FMCEThpost','K1-20pre','K1-20post','K1-7pre','K1-7post','CSEMsam1pre','CSEMsam1post','CSEMsam2pre','CSEMsam2post')
 simdata <- c('NOISEfixed','NOISEflex','CTTfixed','CTTflex','IRTfixed','IRTflex')
 
 if (arg$run){

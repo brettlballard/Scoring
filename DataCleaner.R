@@ -13,8 +13,8 @@ fcitbbl <- as_tibble(fcidf)
 fmcedf <- read.csv(paste0('realdata/FMCE-WVU.csv'))
 fmcetbbl <- as_tibble(fmcedf)
 
-kin1dpdv1df <- read.csv(paste0('realdata/Kin1D-PD-Ver1.csv'))
-kin1dpdv1tbbl <- as_tibble(kin1dpdv1df)
+k1df <- read.csv(paste0('realdata/K1.csv'))
+k1tbbl <- as_tibble(k1df)
 
 csemwvudf <- read.csv(paste0('realdata/CSEM-Aggregated-PrePost-ANON-WVU.csv'))
 csemwvutbbl <- as_tibble(csemwvudf)
@@ -30,7 +30,8 @@ fcipost <- paste0('AQ',1:30,'.y')
 fcipre <- paste0('AQ',1:30,'.x')
 fmcepre <- paste0('FMCEPre',1:47) 
 fmcepost <- paste0('FMCEPost',1:47) 
-kin1dpdv1items <- c('KD1.1.V3s','KD1.10.V7ECs','KD1.8.V5ECs','KD1.11.V7JSs','KD1.12.V3ECs','KD1.14.V3s','KD1.15.V3ECs','KD1.17.V4JSs','KD1.18.V1s','KD1.48.V2JSs','KD1.19.V4ECs','KD1.20.V5JSs','KD1.23.V4JSs','KD1.32.V8ECs','KD1.40.V7JSs','KD1.38.V8ECs','KD1.18.V5ECs','KD1.52.V5JSs','KD1.45.V3ECs','KD1.43.V8ECs')
+k1items <- c('KD1.1.V3s','KD1.10.V7ECs','KD1.8.V5ECs','KD1.11.V7JSs','KD1.12.V3ECs','KD1.14.V3s','KD1.15.V3ECs','KD1.17.V4JSs','KD1.18.V1s','KD1.48.V2JSs','KD1.19.V4ECs','KD1.20.V5JSs','KD1.23.V4JSs','KD1.32.V8ECs','KD1.40.V7JSs','KD1.38.V8ECs','KD1.18.V5ECs','KD1.52.V5JSs','KD1.45.V3ECs','KD1.43.V8ECs')
+k1ciitems <- c('KD1.14.V3s','KD1.17.V4JSs','KD1.48.V2JSs','KD1.23.V4JSs','KD1.32.V8ECs','KD1.38.V8ECs','KD1.18.V5ECs')
 csemwvupre <- paste0('CSEMPre',1:32)
 csemwvupost <- paste0('CSEMPost',1:32)
 csemark <- paste0('P',1:32)
@@ -38,7 +39,8 @@ csemark <- paste0('P',1:32)
 #New column names
 fciItem <- paste0('Item',1:30)
 fmceItem <- paste0('Item',1:47)
-kin1dpdv1Item <- paste0('Item',1:20)
+k1Item <- paste0('Item',1:20)
+k1ciItem <- paste0('Item',1:7)
 csemItem <- paste0('Item',1:32)
 
 #Printing out the full tibble so one can see column names and data types
@@ -113,27 +115,49 @@ print(fmcepostdata)#TEMP
 print(fmcepostdataTh)
 write.csv(fmcepostdataTh, 'realdata/FMCETh-post.csv', row.names = FALSE)
 
-print_color('====================================K1======================================\n','bgreen')
-print(kin1dpdv1tbbl)
-kin1dpdv1data <- kin1dpdv1tbbl %>%
-	select(all_of(c(kin1dpdv1items,'Test.Time')))
-setnames(kin1dpdv1data, old = kin1dpdv1items, new = kin1dpdv1Item)
-print(kin1dpdv1data)
+print_color('===================================K1-20====================================\n','bgreen')
+print(k1tbbl)
+k1data <- k1tbbl %>%
+	select(all_of(c(k1items,'Test.Time')))
+setnames(k1data, old = k1items, new = k1Item)
+print(k1data)
 
-kin1dpdv1post <- kin1dpdv1data %>%
+k1post <- k1data %>%
 	filter(grepl('Post',Test.Time)) %>%
-	select(all_of(kin1dpdv1Item))
-print(kin1dpdv1post)
-write.csv(kin1dpdv1post, 'realdata/K1-post.csv', row.names = FALSE)
+	select(all_of(k1Item))
+print(k1post)
+write.csv(k1post, 'realdata/K1-20-post.csv', row.names = FALSE)
 
-kin1dpdv1pre <- kin1dpdv1data %>%
+k1pre <- k1data %>%
 	filter(grepl('Pre',Test.Time)) %>%
-	select(all_of(kin1dpdv1Item))
-print(kin1dpdv1pre)
-write.csv(kin1dpdv1pre, 'realdata/K1-pre.csv', row.names = FALSE)
+	select(all_of(k1Item))
+print(k1pre)
+write.csv(k1pre, 'realdata/K1-20-pre.csv', row.names = FALSE)
 
-itemcodes <- data.frame(Old.Item.Names = gsub('s','',kin1dpdv1items), New.Item.Names = kin1dpdv1Item)
-write.csv(itemcodes, 'realdata/K1-ItemCodes.csv', row.names = FALSE)
+itemcodes <- data.frame(Old.Item.Names = gsub('s','',k1items), New.Item.Names = k1Item)
+write.csv(itemcodes, 'realdata/K1-20-ItemCodes.csv', row.names = FALSE)
+
+print_color('===================================K1-7=====================================\n','bgreen')
+print(k1tbbl)
+k1cidata <- k1tbbl %>%
+	select(all_of(c(k1ciitems,'Test.Time')))
+setnames(k1cidata, old = k1ciitems, new = k1ciItem)
+print(k1cidata)
+
+k1cipost <- k1cidata %>%
+	filter(grepl('Post',Test.Time)) %>%
+	select(all_of(k1ciItem))
+print(k1cipost)
+write.csv(k1cipost, 'realdata/K1-7-post.csv', row.names = FALSE)
+
+k1cipre <- k1cidata %>%
+	filter(grepl('Pre',Test.Time)) %>%
+	select(all_of(k1ciItem))
+print(k1cipre)
+write.csv(k1cipre, 'realdata/K1-7-pre.csv', row.names = FALSE)
+
+itemcodes <- data.frame(Old.Item.Names = gsub('s','',k1ciitems), New.Item.Names = k1ciItem)
+write.csv(itemcodes, 'realdata/K1-7-ItemCodes.csv', row.names = FALSE)
 
 print_color('====================================CSEM====================================\n','bgreen')
 #Separate and score WVU data
@@ -155,7 +179,7 @@ for (i in 1:32){
 }
 csemwvupredata <- pretemp[,csemItem]
 print(csemwvupredata)
-write.csv(csemwvupredata, 'realdata/CSEMwvu-pre.csv', row.names = FALSE)
+write.csv(csemwvupredata, 'realdata/CSEMsam2-pre.csv', row.names = FALSE)
 
 #Score and output posttest data
 posttemp <- temp %>%
@@ -167,7 +191,7 @@ for (i in 1:32){
 }
 csemwvupostdata <- posttemp[,csemItem]
 print(csemwvupostdata)
-write.csv(csemwvupostdata, 'realdata/CSEMwvu-post.csv', row.names = FALSE)
+write.csv(csemwvupostdata, 'realdata/CSEMsam2-post.csv', row.names = FALSE)
 
 #Get pre and post from arkansas then keep only complete matched records
 pretemp <- csemarkpretbbl %>%
@@ -230,7 +254,7 @@ csemarkpredata <- pretemp %>%
 	select(all_of(csemark))
 setnames(csemarkpredata, old = csemark, new = csemItem)
 print(csemarkpredata)
-write.csv(csemarkpredata, 'realdata/CSEMark-pre.csv', row.names = FALSE)
+write.csv(csemarkpredata, 'realdata/CSEMsam1-pre.csv', row.names = FALSE)
 
 posttemp <- posttemp %>%
 	filter(StudentID %in% commID) %>%
@@ -240,4 +264,4 @@ csemarkpostdata <- posttemp %>%
 	select(all_of(csemark))
 setnames(csemarkpostdata, old = csemark, new = csemItem)
 print(csemarkpostdata)
-write.csv(csemarkpostdata, 'realdata/CSEMark-post.csv', row.names = FALSE)
+write.csv(csemarkpostdata, 'realdata/CSEMsam1-post.csv', row.names = FALSE)

@@ -23,9 +23,10 @@ parser <- add_argument(parser, "--data", help = 'data being used; options are in
 #FCI pre & post
 #FMCE pre & post
 #FMCE Thornton pre & post
-#K1 pre & post
-#CSEMark pre & post
-#CSEMwvu pre & post
+#K1-20 pre & post
+#K1-7 pre & post
+#CSEMsam1 pre & post
+#CSEMsam2 pre & post
 #
 parser <- add_argument(parser, "--rmitems", help = 'items being removed',nargs='*',default=c('NULL'))
 parser <- add_argument(parser, "--useitems", help = 'items being used',nargs='*',default=c('NULL'))
@@ -41,22 +42,25 @@ if (arg$data == 'FCI'){
 }else if (arg$data == 'FMCETh'){
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING FMCETh ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	test <- 'FMCETh'
-}else if (arg$data == 'K1'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1 ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'K1'
-}else if (arg$data == 'CSEMark'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM ARK ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'CSEMark'
-}else if (arg$data == 'CSEMwvu'){
-        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM WVU ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-	test <- 'CSEMwvu'
+}else if (arg$data == 'K1-20'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1-20 ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'K1-20'
+}else if (arg$data == 'K1-7'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!RUNNING K1-7 ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'K1-7'
+}else if (arg$data == 'CSEMsam1'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM SAMPLE 1 ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMsam1'
+}else if (arg$data == 'CSEMsam2'){
+        print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING CSEM SAMPLE 2 ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	test <- 'CSEMsam2'
 }else {
         print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!INVALID DATA ARGUMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bred')
         break
 }
 
 #Make directory to store stuff for each test
-if (!dir.exists(paste0(test,'/'))){dir.create(paste0(test,'/'), recursive = TRUE)}
+if (!dir.exists(paste0('mirtout/',test,'/'))){dir.create(paste0('mirtout/',test,'/'), recursive = TRUE)}
 
 ##############################################################################################################
 #################################################FUNCTIONS####################################################
@@ -268,36 +272,36 @@ print(table(scores$Pretest.AdjEstTheta.Binned))
 
 #Pre vs Post SimSumSc Binned
 prepostsss <- ggplot(data=scores, mapping=aes(x=Pretest.SimSumSc.Binned,y=Posttest.SimSumSc.Binned))+scale_x_continuous(name='Pretest Simple Sum Score', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Posttest Simple Sum Score', n.breaks=10, limits=c(0,100))+geom_smooth()+annotate('segment', x=0, y=0, xend=100, yend=100, colour='black', linetype='dashed')
-ggsave(file=paste0(test,'-PrePost-SimSumSc-Binned-',nit,'.pdf'), path=paste0(test,'/'), prepostsss)
+ggsave(file=paste0(test,'-PrePost-SimSumSc-Binned-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), prepostsss)
 
 #Pre vs Post Thetas(Adj & Normal) Binned 
 prepostadjth <- ggplot(data=scores, mapping=aes(x=Pretest.AdjEstTheta.Binned,y=Posttest.EstTheta.Binned))+scale_x_continuous(name='Pretest Adjusted Estimated Theta', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Posttest Estimated Theta', n.breaks=10, limits=c(0,100))+geom_smooth()+annotate('segment', x=0, y=0, xend=100, yend=100, colour='black', linetype='dashed')
-ggsave(file=paste0(test,'-PrePost-AdjEstTh-Binned-',nit,'.pdf'), path=paste0(test,'/'), prepostadjth)
+ggsave(file=paste0(test,'-PrePost-AdjEstTh-Binned-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), prepostadjth)
 
 prepostth <- ggplot(data=scores, mapping=aes(x=Pretest.EstTheta.Binned,y=Posttest.EstTheta.Binned))+scale_x_continuous(name='Pretest Estimated Theta', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Posttest Estimated Theta', n.breaks=10, limits=c(0,100))+geom_smooth()+annotate('segment', x=0, y=0, xend=100, yend=100, colour='black', linetype='dashed')
-ggsave(file=paste0(test,'-PrePost-EstTh-Binned-',nit,'.pdf'), path=paste0(test,'/'), prepostth)
+ggsave(file=paste0(test,'-PrePost-EstTh-Binned-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), prepostth)
 
 
 #Pre vs Post SimSumSc 
 prepostsss <- ggplot(data=scores, mapping=aes(x=Pretest.SimSumSc,y=Posttest.SimSumSc))+scale_x_continuous(name='Pretest Simple Sum Score', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Posttest Simple Sum Score', n.breaks=10, limits=c(0,100))+geom_smooth()+annotate('segment', x=0, y=0, xend=100, yend=100, colour='black', linetype='dashed')
-ggsave(file=paste0(test,'-PrePost-SimSumSc-',nit,'.pdf'), path=paste0(test,'/'), prepostsss)
+ggsave(file=paste0(test,'-PrePost-SimSumSc-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), prepostsss)
 
 #Pre vs Post Thetas(Adj & Normal) 
 prepostadjth <- ggplot(data=scores, mapping=aes(x=Pretest.AdjEstTheta,y=Posttest.EstTheta))+scale_x_continuous(name='Pretest Adjusted Estimated Theta', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Posttest Estimated Theta', n.breaks=10, limits=c(0,100))+geom_smooth()+annotate('segment', x=0, y=0, xend=100, yend=100, colour='black', linetype='dashed')
-ggsave(file=paste0(test,'-PrePost-AdjEstTh-',nit,'.pdf'), path=paste0(test,'/'), prepostadjth)
+ggsave(file=paste0(test,'-PrePost-AdjEstTh-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), prepostadjth)
 
 prepostth <- ggplot(data=scores, mapping=aes(x=Pretest.EstTheta,y=Posttest.EstTheta))+scale_x_continuous(name='Pretest Estimated Theta', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Posttest Estimated Theta', n.breaks=10, limits=c(0,100))+geom_smooth()+annotate('segment', x=0, y=0, xend=100, yend=100, colour='black', linetype='dashed')
-ggsave(file=paste0(test,'-PrePost-EstTh-',nit,'.pdf'), path=paste0(test,'/'), prepostth)
+ggsave(file=paste0(test,'-PrePost-EstTh-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), prepostth)
 
 #Plotting Binned Pretest.SimSumSc vs posttests measures combined
 plotdf <- melt(scores, id = 'Pretest.SimSumSc.Binned', measure.vars = c('Pretest.EstTheta.Binned','Pretest.AdjEstTheta.Binned'))
 precom <- ggplot(data=plotdf, mapping=aes(x=Pretest.SimSumSc.Binned,y=value,group=variable,color=variable))+scale_x_continuous(name='Pretest Simple Sum Score', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Scaled Pretest Measures', n.breaks=10, limits=c(0,100))+geom_smooth()+annotate('segment', x=0, y=0, xend=100, yend=100, colour='black', linetype='dashed')
-ggsave(file=paste0(test,'-PreSimSumSc-Binned-PreThetas-Binned-',nit,'.pdf'), path=paste0(test,'/'), precom)
+ggsave(file=paste0(test,'-PreSimSumSc-Binned-PreThetas-Binned-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), precom)
 
 #Plotting Binned Posttest.SimSumSc vs pretests measures combined
 plotdf <- melt(scores, id = 'Posttest.SimSumSc.Binned', measure.vars = c('Pretest.SimSumSc.Binned','Pretest.EstTheta.Binned','Pretest.AdjEstTheta.Binned'))
 postcom <- ggplot(data=plotdf, mapping=aes(x=value,y=Posttest.SimSumSc.Binned,group=variable,color=variable))+scale_x_continuous(name='Scaled Pretest Measure', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Posttest Simple Sum Score', n.breaks=10, limits=c(0,100))+geom_smooth()+annotate('segment', x=0, y=0, xend=100, yend=100, colour='black', linetype='dashed')
-ggsave(file=paste0(test,'-PostSimSumSc-Binned-PreAll-Binned-',nit,'.pdf'), path=paste0(test,'/'), postcom)
+ggsave(file=paste0(test,'-PostSimSumSc-Binned-PreAll-Binned-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), postcom)
 
 
 
@@ -305,7 +309,7 @@ ggsave(file=paste0(test,'-PostSimSumSc-Binned-PreAll-Binned-',nit,'.pdf'), path=
 
 #Random plots to try and find any other patterns
 pretest <- ggplot(data=scores, mapping=aes(x=Pretest.SimSumSc,y=Pretest.ThetaDiff))+geom_point(size=1,aes(color=Posttest.SimSumSc))+scale_colour_gradient(low='red',high='green')+scale_x_continuous(name='Pretest Simple Sum Score', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Pretest Est Theta Difference: Normal - Adjusted', n.breaks=10)+geom_smooth()
-ggsave(file=paste0(test,'-Pretest-EstThDiffvSimSumSc-',nit,'.pdf'), path=paste0(test,'/'), pretest)
+ggsave(file=paste0(test,'-Pretest-EstThDiffvSimSumSc-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), pretest)
 
 #Will combine the two below
 preth <- ggplot(data=scores, mapping=aes(x=Pretest.SimSumSc,y=Pretest.EstTheta))+geom_point(size=1,aes(color=Posttest.SimSumSc))+scale_colour_gradient(low='red',high='green')+scale_x_continuous(name='Pretest Simple Sum Score', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Pretest Estimated Theta', n.breaks=10, limits=c(0,100))+geom_smooth()
@@ -315,7 +319,7 @@ preadjth <- ggplot(data=scores, mapping=aes(x=Pretest.SimSumSc,y=Pretest.AdjEstT
 pre <- plot_grid(preth+theme(legend.position='none'), preadjth+theme(legend.position='none'), labels = c('A','B'))
 legend <- get_legend(preth+guides(color = guide_legend(nrow=1))+theme(legend.position = 'bottom'))
 pre <- plot_grid(pre, legend, ncol = 1, rel_heights=c(1, .1))
-ggsave(file=paste0(test,'-Pretest-EstThvSimSumSc-',nit,'.pdf'), path=paste0(test,'/'), pre)
+ggsave(file=paste0(test,'-Pretest-EstThvSimSumSc-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), pre)
 
 #Will combine the two below
 post.preth <- ggplot(data=scores, mapping=aes(x=Posttest.SimSumSc,y=Posttest.EstTheta))+geom_point(size=1,aes(color=Pretest.EstTheta))+scale_colour_gradient(low='red',high='green')+scale_x_continuous(name='Posttest Simple Sum Score', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Posttest Estimated Theta', n.breaks=10, limits=c(0,100))+geom_smooth()
@@ -323,7 +327,7 @@ post.preth <- ggplot(data=scores, mapping=aes(x=Posttest.SimSumSc,y=Posttest.Est
 post.preadjth <- ggplot(data=scores, mapping=aes(x=Posttest.SimSumSc,y=Posttest.EstTheta))+geom_point(size=1,aes(color=Pretest.AdjEstTheta))+scale_colour_gradient(low='red',high='green')+scale_x_continuous(name='Posttest Simple Sum Score', n.breaks=10, limits=c(0,100))+scale_y_continuous(name='Posttest Estimated Theta', n.breaks=10, limits=c(0,100))+geom_smooth()
 
 post <- plot_grid(post.preth, post.preadjth, labels = c('A','B'), ncol=1)
-ggsave(file=paste0(test,'-Posttest-EstThvSimSumSc-',nit,'.pdf'), path=paste0(test,'/'), post)
+ggsave(file=paste0(test,'-Posttest-EstThvSimSumSc-',nit,'.pdf'), path=paste0('mirtout/',test,'/'), post)
 
 
 
