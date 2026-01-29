@@ -86,7 +86,7 @@ for (name in names){
 		print()
 
 	#Plotting things for each analysis individually	
-	if (!dir.exists(paste0('plotanalysisout/flex/IRT/',name,'/'))){dir.create(paste0('plotanalysisout/flex/IRT/',name,'/'), recursive = TRUE)}
+	if (!dir.exists(paste0('plotsimulationout/flex/IRT/',name,'/'))){dir.create(paste0('plotsimulationout/flex/IRT/',name,'/'), recursive = TRUE)}
 	
 	#Plotting item iteration x-axis 
 	if (name %in% itemiter){
@@ -111,40 +111,40 @@ for (name in names){
 			print()
 		meansets <- append(meansets, list(meandf))
 
-		ggplot(data=df, mapping=aes(x=Number.Items,y=Alpha))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Alpha'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Alpha', n.breaks=10)+geom_line(data=meandf, aes(x=Number.Items,y=Mean.Alpha))
-		ggsave(file=paste0('Alpha-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
+		ggplot(data=df, mapping=aes(x=Number.Items,y=Alpha))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Alpha'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Alpha', n.breaks=10)+geom_line(data=meandf, aes(x=Number.Items,y=Mean.Alpha))+theme_bw()
+		ggsave(file=paste0('Alpha-IterItems-PHDI.pdf'), path=paste0('plotsimulationout/flex/IRT/',name,'/'))
 
-		ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.2PLDiff.2PLDisc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Correlation Between 2PL Difficulty And 2PL Discrimination'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Correlation Between 2PL Difficulty And 2PL Discrimination', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.2PLDiff.2PLDisc))
-		ggsave(file=paste0('Corr-2PLDiff-2PLDisc-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
+		ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.2PLDiff.2PLDisc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Correlation Between 2PL Difficulty And 2PL Discrimination'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Correlation Between 2PL Difficulty And 2PL Discrimination', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.2PLDiff.2PLDisc))+theme_bw()
+		ggsave(file=paste0('Corr-2PLDiff-2PLDisc-IterItems-PHDI.pdf'), path=paste0('plotsimulationout/flex/IRT/',name,'/'))
 
-		ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.Diff))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.Diff))
-		ggsave(file=paste0('DiffCorr-TrTh-WScvsSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
+		ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.Diff))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.Diff))+theme_bw()
+		ggsave(file=paste0('DiffCorr-TrTh-WScvsSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotsimulationout/flex/IRT/',name,'/'))
 
-		ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.DiffEst))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Estimated Theta - True Theta:Estimated Expected Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.DiffEst))
-		ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
+		ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.DiffEst))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Estimated Theta - True Theta:Estimated Expected Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.DiffEst))+theme_bw()
+		ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterItems-PHDI.pdf'), path=paste0('plotsimulationout/flex/IRT/',name,'/'))
 
-		ggplot(data=df, mapping=aes(x=Number.Items,y=R2.TrTh.Diff))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in R-Squared'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.R2.TrTh.Diff))
-		ggsave(file=paste0('DiffR2-TrTh-WScvsSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'))
+		ggplot(data=df, mapping=aes(x=Number.Items,y=R2.TrTh.Diff))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+labs(title=paste0('Difference in R-Squared'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+geom_line(data=meandf, aes(x=Number.Items,y=Mean.R2.TrTh.Diff))+theme_bw()
+		ggsave(file=paste0('DiffR2-TrTh-WScvsSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotsimulationout/flex/IRT/',name,'/'))
 
 		#Will combine the two below
-		CORRWSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.WSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Correlation Between True Theta And Weighted Score', n.breaks=10, limits=c(min(c(df$CORR.TrTh.WSc,df$CORR.TrTh.SimSumSc)),1))+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.WSc))
+		CORRWSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.WSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Correlation Between True Theta And Weighted Score', n.breaks=10, limits=c(min(c(df$CORR.TrTh.WSc,df$CORR.TrTh.SimSumSc)),1))+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.WSc))+theme_bw()
 
-		CORRSimSumSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.SimSumSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Correlation Between True Theta And SimSum Score', n.breaks=10, limits=c(min(c(df$CORR.TrTh.WSc,df$CORR.TrTh.SimSumSc)),1))+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.SimSumSc))
+		CORRSimSumSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=CORR.TrTh.SimSumSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Correlation Between True Theta And SimSum Score', n.breaks=10, limits=c(min(c(df$CORR.TrTh.WSc,df$CORR.TrTh.SimSumSc)),1))+geom_line(data=meandf, aes(x=Number.Items,y=Mean.CORR.TrTh.SimSumSc))+theme_bw()
 		
 		corr <- plot_grid(CORRWSc+theme(legend.position='none'), CORRSimSumSc+theme(legend.position='none'), labels = c('A','B'))
 		legend <- get_legend(CORRWSc+guides(color = guide_legend(nrow=1))+theme(legend.position = 'bottom'))
 		corr <- plot_grid(corr, legend, ncol = 1, rel_heights=c(1, .1))
-		ggsave(file=paste0('Corr-TrTh-WScvSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'), corr)
+		ggsave(file=paste0('Corr-TrTh-WScvSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotsimulationout/flex/IRT/',name,'/'), corr)
 
 		#Will combine the two below
-		R2WSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=R2.TrTh.WSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Variance in True Theta Explained By Weighted Score', n.breaks=10, limits=c(min(c(df$R2.TrTh.WSc,df$R2.TrTh.SimSumSc)),1))+geom_line(data=meandf, aes(x=Number.Items,y=Mean.R2.TrTh.WSc))
+		R2WSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=R2.TrTh.WSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Variance in True Theta Explained By Weighted Score', n.breaks=10, limits=c(min(c(df$R2.TrTh.WSc,df$R2.TrTh.SimSumSc)),1))+geom_line(data=meandf, aes(x=Number.Items,y=Mean.R2.TrTh.WSc))+theme_bw()
 
-		R2SimSumSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=R2.TrTh.SimSumSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Variance in True Theta Explained by SimSum Score', n.breaks=10, limits=c(min(c(df$R2.TrTh.WSc,df$R2.TrTh.SimSumSc)),1))+geom_line(data=meandf, aes(x=Number.Items,y=Mean.R2.TrTh.SimSumSc))
+		R2SimSumSc <- ggplot(data=df, mapping=aes(x=Number.Items,y=R2.TrTh.SimSumSc))+geom_point(size=1,aes(color=Proportion.High.Disc.Items))+scale_colour_gradient(low='red',high='blue')+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(df$Number.Items)-5,max(df$Number.Items)+5))+scale_y_continuous(name='Variance in True Theta Explained by SimSum Score', n.breaks=10, limits=c(min(c(df$R2.TrTh.WSc,df$R2.TrTh.SimSumSc)),1))+geom_line(data=meandf, aes(x=Number.Items,y=Mean.R2.TrTh.SimSumSc))+theme_bw()
 		
 		r2 <- plot_grid(R2WSc+theme(legend.position='none'), R2SimSumSc+theme(legend.position='none'), labels = c('A','B'))
 		legend <- get_legend(R2WSc+guides(color = guide_legend(nrow=1))+theme(legend.position = 'bottom'))
 		r2 <- plot_grid(r2, legend, ncol = 1, rel_heights=c(1, .1))
-		ggsave(file=paste0('R2-TrTh-WScvSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotanalysisout/flex/IRT/',name,'/'), r2)
+		ggsave(file=paste0('R2-TrTh-WScvSimSumSc-IterItems-PHDI.pdf'), path=paste0('plotsimulationout/flex/IRT/',name,'/'), r2)
 	}
 	
 	datasets <- append(datasets, list(df))
@@ -162,47 +162,47 @@ meandata <- do.call(rbind, meansets)
 print(as_tibble(meandata))
 print(colnames(meandata))
 
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.Alpha,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Alpha'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Alpha', n.breaks=10)
-ggsave(file=paste0('Alpha-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
+ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.Alpha,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Alpha'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Alpha', n.breaks=10)+theme_bw()
+ggsave(file=paste0('Alpha-IterItems.pdf'), path=paste0('plotsimulationout/flex/IRT/'))
 
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.2PLDiff.2PLDisc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Correlation Between 2PL Difficulty and 2PL Discrimination'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Correlation Between 2PL Difficulty and 2PL Discrimination', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
-ggsave(file=paste0('Corr-2PLDiff-2PLDisc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
+ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.2PLDiff.2PLDisc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Correlation Between 2PL Difficulty and 2PL Discrimination'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Correlation Between 2PL Difficulty and 2PL Discrimination', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+theme_bw()
+ggsave(file=paste0('Corr-2PLDiff-2PLDisc-IterItems.pdf'), path=paste0('plotsimulationout/flex/IRT/'))
 
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.Diff,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
-ggsave(file=paste0('DiffCorr-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
+ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.Diff,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+theme_bw()
+ggsave(file=paste0('DiffCorr-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('plotsimulationout/flex/IRT/'))
 
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.DiffEst,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Estimated Theta - True Theta:Estimated Expected Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
-ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
+ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.DiffEst,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Estimated Theta - True Theta:Estimated Expected Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+theme_bw()
+ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterItems.pdf'), path=paste0('plotsimulationout/flex/IRT/'))
 		
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.Diff,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in R-Squared'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
-ggsave(file=paste0('DiffR2-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
+ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.Diff,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in R-Squared'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+theme_bw()
+ggsave(file=paste0('DiffR2-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('plotsimulationout/flex/IRT/'))
 
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Hedge.g,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Hedge\'s g for Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Correlation Differences Hedge\'s g', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')
-ggsave(file=paste0('Hedgesg-DiffCorr-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'))
+ggplot(data=meandata, mapping=aes(x=Number.Items,y=Hedge.g,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Hedge\'s g for Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Correlation Differences Hedge\'s g', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+theme_bw()
+ggsave(file=paste0('Hedgesg-DiffCorr-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('plotsimulationout/flex/IRT/'))
 
 #Will combine the two below
-mnCORRWSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.WSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Mean Correlation Between True Theta And Weighted Score', n.breaks=10, limits=c(min(c(meandata$Mean.CORR.TrTh.WSc,meandata$Mean.CORR.TrTh.SimSumSc)),1))
+mnCORRWSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.WSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Mean Correlation Between True Theta And Weighted Score', n.breaks=10, limits=c(min(c(meandata$Mean.CORR.TrTh.WSc,meandata$Mean.CORR.TrTh.SimSumSc)),1))+theme_bw()
 
-mnCORRSimSumSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.SimSumSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Mean Correlation Between True Theta And SimSum Score', n.breaks=10, limits=c(min(c(meandata$Mean.CORR.TrTh.WSc,meandata$Mean.CORR.TrTh.SimSumSc)),1))
+mnCORRSimSumSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.SimSumSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Mean Correlation Between True Theta And SimSum Score', n.breaks=10, limits=c(min(c(meandata$Mean.CORR.TrTh.WSc,meandata$Mean.CORR.TrTh.SimSumSc)),1))+theme_bw()
 
 mncorr <- plot_grid(mnCORRWSc+theme(legend.position='none'), mnCORRSimSumSc+theme(legend.position='none'), labels = c('A','B'))
 legend <- get_legend(mnCORRWSc+guides(color = guide_legend(nrow=1))+theme(legend.position = 'bottom'))
 mncorr <- plot_grid(mncorr, legend, ncol = 1, rel_heights=c(.8, .2))
-save_plot(file=paste0('Corr-TrTh-WScvSimSumSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'),mncorr, ncol = 1, nrow = 2)
+save_plot(file=paste0('Corr-TrTh-WScvSimSumSc-IterItems.pdf'), path=paste0('plotsimulationout/flex/IRT/'),mncorr, ncol = 1, nrow = 2)
 
 
 #Will combine the two below
-mnR2WSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.WSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Mean Variance in True Theta Explained by Weighted Score', n.breaks=10, limits=c(min(c(meandata$Mean.R2.TrTh.WSc,meandata$Mean.R2.TrTh.SimSumSc)),1))
+mnR2WSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.WSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Mean Variance in True Theta Explained by Weighted Score', n.breaks=10, limits=c(min(c(meandata$Mean.R2.TrTh.WSc,meandata$Mean.R2.TrTh.SimSumSc)),1))+theme_bw()
 
-mnR2SimSumSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.SimSumSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Mean Variance in True Theta Explained by SimSum Score', n.breaks=10, limits=c(min(c(meandata$Mean.R2.TrTh.WSc,meandata$Mean.R2.TrTh.SimSumSc)),1))
+mnR2SimSumSc <- ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.SimSumSc,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Mean Variance in True Theta Explained by SimSum Score', n.breaks=10, limits=c(min(c(meandata$Mean.R2.TrTh.WSc,meandata$Mean.R2.TrTh.SimSumSc)),1))+theme_bw()
 
 mnr2 <- plot_grid(mnR2WSc+theme(legend.position='none'), mnR2SimSumSc+theme(legend.position='none'), labels = c('A','B'))
 legend <- get_legend(mnR2WSc+guides(color = guide_legend(nrow=1))+theme(legend.position = 'bottom'))
 mnr2 <- plot_grid(mnr2, legend, ncol = 1, rel_heights=c(.8, .2))
-save_plot(file=paste0('R2-TrTh-WScvSimSumSc-IterItems.pdf'), path=paste0('plotanalysisout/flex/IRT/'),mnr2, ncol = 1, nrow = 2)
+save_plot(file=paste0('R2-TrTh-WScvSimSumSc-IterItems.pdf'), path=paste0('plotsimulationout/flex/IRT/'),mnr2, ncol = 1, nrow = 2)
 
 #Plot correlations by analysis name
-pdf('plotanalysisout/flex/IRT/Correlations.pdf')
+pdf('plotsimulationout/flex/IRT/Correlations.pdf')
 for (name in names){
 	temp <- data %>%
 		filter(Analysis.Name == name) %>%
@@ -211,7 +211,7 @@ for (name in names){
 		print()
 	plotdf <- melt(temp, id = 'Number.Items')
 
-	print(ggplot(data=plotdf, mapping=aes(x=Number.Items,y=value,group=variable,color=variable))+geom_smooth()+labs(title=paste0('Correlations For ',name))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(plotdf$Number.Items)-5,max(plotdf$Number.Items)+5))+scale_y_continuous(name='Correlation', n.breaks=10)+coord_cartesian(ylim=c(min(meandata$Mean.CORR.TrTh.WSc,meandata$Mean.CORR.TrTh.SimSumSc,meandata$Mean.CORR.TrTh.EstTh),1)))
+	print(ggplot(data=plotdf, mapping=aes(x=Number.Items,y=value,group=variable,color=variable))+geom_smooth()+labs(title=paste0('Correlations For ',name))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(plotdf$Number.Items)-5,max(plotdf$Number.Items)+5))+scale_y_continuous(name='Correlation', n.breaks=10)+coord_cartesian(ylim=c(min(meandata$Mean.CORR.TrTh.WSc,meandata$Mean.CORR.TrTh.SimSumSc,meandata$Mean.CORR.TrTh.EstTh),1))+theme_bw())
 }
 dev.off()
 

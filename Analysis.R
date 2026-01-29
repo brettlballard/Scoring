@@ -324,7 +324,8 @@ for (nit in numitems){
 				df <- read.csv(paste0('simdata/',tt,'/',test,'/',name,'/',nit,'items','/',nst,'students','/',paste0(name,r),'-Data.csv'))
 				
 				#Defining Item
-				Item <- paste0('Item',1:nit)
+				Item <- colnames(df)
+				Item <- Item[grepl('Item',Item)]
 				print(Item)
 			}
 			

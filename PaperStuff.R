@@ -69,8 +69,6 @@ if ('REAL' %in% run){
 	print_color('============================================================================\n','bcyan')
 	names <- c('FCI','FMCE','FMCETh','K1-20','K1-7','CSEMsam1','CSEMsam2')
 
-	names <- c('FMCETh')
-
 	pdf('paperstuffout/Real-Test-Plots.pdf')
 	for (name in names){
 		print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING ',name,' ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
@@ -81,10 +79,8 @@ if ('REAL' %in% run){
 		print(itemfit(model, fit_stats = c('S_X2')))
 
 		#Removing items with poor parameters: |b| > 3
-		#Removing the items sequentially with the highest RMSEA S_Chi^2 if tied then take highest S_Chi^2
-		#Repeat item removal until TLI & CFI > .9, RMSEA < .06, & SRMSR < .05 or number of items is less than 10 
 		if (name == 'FCI'){
-			rmitems <- c('Item29','Item15','Item21','Item22','Item11','Item9','Item27','Item26','Item16','Item2','Item5','Item25','Item14','Item28')
+			rmitems <- c('Item29')
 			#Item 29: b = -10.67
 			data <- data %>% select(-all_of(rmitems))
 		
@@ -92,38 +88,32 @@ if ('REAL' %in% run){
 			rmitems <- c('Item15','Item33')
 			#Item 15: b = -4.85 
 			#Item 33: b = -3.57
-			#fit indices got substantially worse during the trimming process based on item fit stats
 			data <- data %>% select(-all_of(rmitems))
 		
 		}else if (name == 'FMCETh'){
-			rmitems <- c('Item43','Item16','Item19','Item1','Item18','Item4')
+			rmitems <- c('Item43')
 			#Item 43: b = -3.07 
 			data <- data %>% select(-all_of(rmitems))
 		
 		}else if (name == 'K1-20'){
 			rmitems <- c()
-			#Item : Full test S_Chi^2 over 100
-			#Fit indices fine already
 			data <- data %>% select(-all_of(rmitems))
 		
 		}else if (name == 'K1-7'){
 			rmitems <- c()
-			#Item : Full test S_Chi^2 over 100
-			#Fit indices fine already
 			data <- data %>% select(-all_of(rmitems))
 		
 		}else if (name == 'CSEMsam1'){
-			rmitems <- c('Item4')
-			#Item 4: Full test S_Chi^2 over 100
-			#Item 5,10,11,23,25,29: Reduced test S_Chi^2 over 30
+			rmitems <- c('Item1')
+			#Item 1: b = -3.865 
 			data <- data %>% select(-all_of(rmitems))
 		
 		}else if (name == 'CSEMsam2'){
-			rmitems <- c()
-			#Item : Full test S_Chi^2 over 100
-			#Item : Reduced test S_Chi^2 over 50
+			rmitems <- c('Item14','Item22')
+			#Item 14: b = 4.014 
+			#Item 22: b = 4.057
 			data <- data %>% select(-all_of(rmitems))
-		
+
 		}
 
 		print_color('============================================================================\n','bviolet')
@@ -139,7 +129,7 @@ if ('REAL' %in% run){
 		coeff <- coeff[,c('Label','items.a','items.b')]
 		
 		#Plot things
-		print(ggplot(data=coeff, mapping=aes(x=items.b,y=items.a))+geom_point(size=2)+geom_text_repel(label=coeff$Label, size=2,max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+scale_x_continuous(name='2PL Item Difficulty', n.breaks=10, limits=c(-3,3))+scale_y_continuous(name='2PL Item Discrimination', n.breaks=10)+geom_smooth(method = lm, se = TRUE))
+		print(ggplot(data=coeff, mapping=aes(x=items.b,y=items.a))+geom_point(size=2)+geom_text_repel(label=coeff$Label, size=2,max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+scale_x_continuous(name='2PL Item Difficulty', n.breaks=10, limits=c(-3,3))+scale_y_continuous(name='2PL Item Discrimination', n.breaks=10)+geom_smooth(span=5, se=FALSE)+theme_bw())
 	}
 	dev.off()
 }
