@@ -21,16 +21,16 @@ arg <- parse_args(parser)
 
 #Resetting argument parameters
 if ('All' %in% arg$names){
-	names <- list('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split')
+	names <- list('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform')
 }else {
 	names <- strsplit(arg$names,',')[[1]]
 }
 
 #Splitting datasets for stuff below
-outputs <- list('expgrow'=350, 'expdecay'=350, 'logist'=350, 'reflogist'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'leftasym'=350, 'rightasym'=350, 'noshape'=350, 'split'=350)
-itemiter <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split')
-disciter <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape')
-sim <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split')
+outputs <- list('expgrow'=350, 'expdecay'=350, 'logist'=350, 'reflogist'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'leftasym'=350, 'rightasym'=350, 'mixednorm'=350, 'split'=350, 'restricunif'=350, 'uniform'=350)
+itemiter <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform')
+disciter <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','restricunif','uniform')
+sim <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform')
 ggshapes <- c(0:14,32:127)
 
 ##############################################################################################################
@@ -44,6 +44,9 @@ stderr <- function(x){
 ###################################################DATA#######################################################
 ##############################################################################################################
 
+print_color(paste0('=================================================================================\n'),'bcyan')
+print_color(paste0('==========================COLLECTING SIMULATED DATA==============================\n'),'bcyan')
+print_color(paste0('=================================================================================\n'),'bcyan')
 #Collecting information of interest
 datasets <- list()
 meansets <- list()
@@ -105,7 +108,7 @@ for (name in names){
 		meandf <- df %>%
 			group_by(Number.Items) %>%
 			summarize(Mean.CORR.TrTh.Diff = mean(CORR.TrTh.Diff), Mean.CORR.TrTh.WSc = mean(CORR.TrTh.WSc), Mean.CORR.TrTh.SimSumSc = mean(CORR.TrTh.SimSumSc), Mean.CORR.TrTh.EstTh = mean(CORR.TrTh.EstTh), Mean.CORR.TrTh.DiffEst = mean(CORR.TrTh.DiffEst), Mean.R2.TrTh.Diff = mean(R2.TrTh.Diff), Mean.R2.TrTh.WSc = mean(R2.TrTh.WSc), Mean.R2.TrTh.SimSumSc = mean(R2.TrTh.SimSumSc), Mean.CORR.2PLDiff.2PLDisc = mean(CORR.2PLDiff.2PLDisc), Mean.Alpha = mean(Alpha)) %>%
-			mutate(Analysis.Name = rep(name,times = length(nitems))) %>%
+			mutate(Analysis.Name = rep(name, times = length(nitems))) %>%
 			mutate(Hedge.g = gvec) %>%
 			as_tibble() %>%
 			print()
@@ -150,9 +153,43 @@ for (name in names){
 	datasets <- append(datasets, list(df))
 }
 
-print_color(paste0('=======================================================================\n'),'bcyan')
-print_color(paste0('=======================PLOTTING ALL ANALYSES===========================\n'),'bcyan')
-print_color(paste0('=======================================================================\n'),'bcyan')
+print_color(paste0('=================================================================================\n'),'bblue')
+print_color(paste0('=======================COLLECTING SIMULATED LEGACY DATA==========================\n'),'bblue')
+print_color(paste0('=================================================================================\n'),'bblue')
+#Collect data from simulated legacy instruments
+simlegacy <- c('FCIpostsim','K1-20postsim','FMCEpostsim','FMCEThpostsim','CSEMsam1postsim','CSEMsam2postsim')
+legmeansets <- list()
+for (leg in simlegacy){
+	print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING ',leg,' ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+	#Collecting analysis outputs
+	df <- read.csv(paste0('analysisout/summary/IRT/flex/',leg,'/AnalysisOutput50.csv'))
+	df$Legacy.Name <- rep(leg, times = 50)
+	df <- df %>%
+		mutate(CORR.TrTh.Diff = CORR.TrTh.WSc - CORR.TrTh.SimSumSc) %>%
+		mutate(CORR.TrExpSc.Diff = CORR.TrExpSc.WSc - CORR.TrExpSc.SimSumSc) %>%
+		mutate(CORR.TrTh.DiffEst = CORR.TrTh.EstTh - CORR.TrTh.EstExpSc) %>%
+		mutate(R2.TrTh.Diff = R2.TrTh.WSc - R2.TrTh.SimSumSc) %>%
+		as_tibble() %>%
+		print()
+	
+	#Saving means for plotting below
+	meandf <- df %>%
+		group_by(Number.Items) %>%
+		summarize(Mean.CORR.TrTh.Diff = mean(CORR.TrTh.Diff), Mean.CORR.TrTh.WSc = mean(CORR.TrTh.WSc), Mean.CORR.TrTh.SimSumSc = mean(CORR.TrTh.SimSumSc), Mean.CORR.TrTh.EstTh = mean(CORR.TrTh.EstTh), Mean.CORR.TrTh.DiffEst = mean(CORR.TrTh.DiffEst), Mean.R2.TrTh.Diff = mean(R2.TrTh.Diff), Mean.R2.TrTh.WSc = mean(R2.TrTh.WSc), Mean.R2.TrTh.SimSumSc = mean(R2.TrTh.SimSumSc), Mean.CORR.2PLDiff.2PLDisc = mean(CORR.2PLDiff.2PLDisc), Mean.Alpha = mean(Alpha)) %>%
+		mutate(Legacy.Name = rep(leg, times = 1)) %>%
+		as_tibble() %>%
+		print()
+	
+	legmeansets <- append(legmeansets, list(meandf))
+}	
+legmeandata <- do.call(rbind, legmeansets)
+print(as_tibble(legmeandata))
+print(colnames(legmeandata))
+
+#Plot all simulations together
+print_color(paste0('=================================================================================\n'),'bviolet')
+print_color(paste0('============================PLOTTING ALL ANALYSES================================\n'),'bviolet')
+print_color(paste0('=================================================================================\n'),'bviolet')
 #Merging different analysis name runs if applicable
 data <- do.call(rbind, datasets)
 print(as_tibble(data))
@@ -174,7 +211,7 @@ ggsave(file=paste0('DiffCorr-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('pl
 ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.CORR.TrTh.DiffEst,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Estimated Theta - True Theta:Estimated Expected Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+theme_bw()
 ggsave(file=paste0('DiffCorr-TrTh-EstExpScvsEstTh-IterItems.pdf'), path=paste0('plotsimulationout/flex/IRT/'))
 		
-ggplot(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.Diff,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in R-Squared'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+theme_bw()
+ggplot()+geom_point(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.Diff,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_line(data=meandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.Diff,group=Analysis.Name,color=Analysis.Name))+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Difference in R-Squared'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='True Theta:Weighted Score - True Theta:SimSum Score', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+theme_bw()+geom_point(data=legmeandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.Diff))+geom_text(data=legmeandata, mapping=aes(x=Number.Items,y=Mean.R2.TrTh.Diff,label=Legacy.Name), size=3, nudge_y=.0025)
 ggsave(file=paste0('DiffR2-TrTh-WScvsSimSumSc-IterItems.pdf'), path=paste0('plotsimulationout/flex/IRT/'))
 
 ggplot(data=meandata, mapping=aes(x=Number.Items,y=Hedge.g,group=Analysis.Name,color=Analysis.Name,shape=Analysis.Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(meandata$Analysis.Name))])+labs(title=paste0('Hedge\'s g for Difference in Correlations'))+scale_x_continuous(name='Number of Items', n.breaks=10, limits=c(min(meandata$Number.Items)-5,max(meandata$Number.Items)+5))+scale_y_continuous(name='Correlation Differences Hedge\'s g', n.breaks=10)+geom_hline(yintercept=0,linetype='dashed',color='black')+theme_bw()

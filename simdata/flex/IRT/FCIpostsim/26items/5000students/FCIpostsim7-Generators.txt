@@ -1,0 +1,5 @@
+Number of Items: 26
+Number of Students: 5000
+Theta Mean: 0
+Theta Standard Deviation: 1
+Theta Weighting: eq

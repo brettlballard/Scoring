@@ -93,12 +93,12 @@ for (nst in numst){
 				itemdiff <- temp$Est.Difficulty.2PL
 				itemdisc <- temp$Est.Discrimination.2PL
 			}else if (arg$legacy == 'FMCE'){
-				temp <- read.csv('analysisout/summary/FMCE/post/2PLpar-4505.csv')
+				temp <- read.csv('analysisout/summary/FMCE/post/2PLpar-4689.csv')
 				Item <- temp$Items
 				itemdiff <- temp$Est.Difficulty.2PL
 				itemdisc <- temp$Est.Discrimination.2PL
 			}else if (arg$legacy == 'FMCETh'){
-				temp <- read.csv('analysisout/summary/FMCETh/post/2PLpar-4505.csv')
+				temp <- read.csv('analysisout/summary/FMCETh/post/2PLpar-4689.csv')
 				Item <- temp$Items
 				itemdiff <- temp$Est.Difficulty.2PL
 				itemdisc <- temp$Est.Discrimination.2PL
@@ -108,7 +108,7 @@ for (nst in numst){
 				itemdiff <- temp$Est.Difficulty.2PL
 				itemdisc <- temp$Est.Discrimination.2PL
 			}else if (arg$legacy == 'CSEMsam2'){
-				temp <- read.csv('analysisout/summary/CSEMsam2/post/2PLpar-3597.csv')
+				temp <- read.csv('analysisout/summary/CSEMsam2/post/2PLpar-4371.csv')
 				Item <- temp$Items
 				itemdiff <- temp$Est.Difficulty.2PL
 				itemdisc <- temp$Est.Discrimination.2PL

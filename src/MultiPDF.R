@@ -14,7 +14,7 @@ multirnorm <- function(ns, mean, sd, w){
 		}
 	}else {
 		w <- as.numeric(w)
-		if (sum(w) != 1){
+		if (!all.equal(sum(w),1)){
 			print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!WEIGHTS DO NOT EQUAL ONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bred')
         		break
 		}
@@ -70,7 +70,7 @@ multirunif <- function(ns, min, max, w){
 		}
 	}else {
 		w <- as.numeric(w)
-		if (sum(w) != 1){
+		if (!all.equal(sum(w),1)){
 			print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!WEIGHTS DO NOT EQUAL ONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bred')
         		break
 		}
@@ -94,8 +94,6 @@ multirunif <- function(ns, min, max, w){
 		set.seed(NULL)#makes sure parameters end up in new bin each time 
 		r <- runif(1, min=0, max=1)
 	
-		print(r)#TEMP
-
 		#Iterate over possible pdfs
 		check <- w[1]
 		for (j in 1:num){

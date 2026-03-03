@@ -23,18 +23,18 @@ arg <- parse_args(parser)
 #Resetting argument parameters
 if ('All' %in% arg$names){
 	if (arg$inclPre){
-		names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipre','fcipost','fmcethpre','fmcethpost','k1-20pre','k1-20post','k1-7pre','k1-7post','csemsam1pre','csemsam1post','csemsam2pre','csemsam2post')
+		names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform','fcipre','fcipost','fmcepost','fmcepre','fmcethpre','fmcethpost','k1-20pre','k1-20post','csemsam1pre','csemsam1post','csemsam2pre','csemsam2post')
 	}else{
-		names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split','fcipost','fmcethpost','k1-20post','k1-7post','csemsam1post','csemsam2post')
+		names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform','fcipost','fmcepost','fmcethpost','k1-20post','csemsam1post','csemsam2post')
 	}
 }else {
 	names <- strsplit(arg$names,',')[[1]]
 }
 
 #Splitting datasets for stuff below
-outputs <- list('expgrow'=350, 'expdecay'=350, 'logist'=350, 'reflogist'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'leftasym'=350, 'rightasym'=350, 'noshape'=350, 'split'=350)
-itemiter <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split')
-sim <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','noshape','split')
+outputs <- list('expgrow'=350, 'expdecay'=350, 'logist'=350, 'reflogist'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'leftasym'=350, 'rightasym'=350, 'mixednorm'=350, 'split'=350, 'restricunif'=350, 'uniform'=350)
+itemiter <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform')
+sim <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform')
 ggshapes <- c(0:14,32:127)
 ##############################################################################################################
 #################################################FUNCTIONS####################################################
@@ -49,15 +49,15 @@ meansets <- list()
 for (name in names){
 	print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING ',name,' ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
 	#Collecting analysis outputs
-	if (grepl('fci', name) | grepl('fmce', name) | grepl('k1-20',name) | grepl('k1-7',name) | grepl('csem',name)){
+	if (grepl('fci', name) | grepl('fmce', name) | grepl('k1-20',name) | grepl('csem',name)){
 		if (grepl('fci', name) & grepl('post', name)){
 			df <- read.csv(paste0('analysisout/summary/FCI/post/AnalysisOutput1.csv'))
+		}else if ((grepl('fmce', name) & !grepl('th', name)) & grepl('post', name)){
+			df <- read.csv(paste0('analysisout/summary/FMCE/post/AnalysisOutput1.csv'))
 		}else if (grepl('fmceth', name) & grepl('post', name)){
 			df <- read.csv(paste0('analysisout/summary/FMCETh/post/AnalysisOutput1.csv'))
 		}else if (grepl('k1-20', name) & grepl('post', name)){
 			df <- read.csv(paste0('analysisout/summary/K1-20/post/AnalysisOutput1.csv'))
-		}else if (grepl('k1-7', name) & grepl('post', name)){
-			df <- read.csv(paste0('analysisout/summary/K1-7/post/AnalysisOutput1.csv'))
 		}else if (grepl('csemsam1', name) & grepl('post', name)){
 			df <- read.csv(paste0('analysisout/summary/CSEMsam1/post/AnalysisOutput1.csv'))
 		}else if (grepl('csemsam2', name) & grepl('post', name)){
@@ -83,12 +83,12 @@ for (name in names){
 				if (grepl('fci', name) | grepl('fmce', name) | grepl('k1',name) | grepl('csem',name)){
 					if (grepl('fci', name) & grepl('post', name)){
 						scoredf <- read.csv(paste0('analysisout/summary/FCI/post/Scores-',nst,'.csv'))
+					}else if ((grepl('fmce', name) & !grepl('th', name)) & grepl('post', name)){
+						scoredf <- read.csv(paste0('analysisout/summary/FMCE/post/Scores-',nst,'.csv'))
 					}else if (grepl('fmceth', name) & grepl('post', name)){
 						scoredf <- read.csv(paste0('analysisout/summary/FMCETh/post/Scores-',nst,'.csv'))
 					}else if (grepl('k1-20',name) & grepl('post', name)){
 						scoredf <- read.csv(paste0('analysisout/summary/K1-20/post/Scores-',nst,'.csv'))
-					}else if (grepl('k1-7',name) & grepl('post', name)){
-						scoredf <- read.csv(paste0('analysisout/summary/K1-7/post/Scores-',nst,'.csv'))
 					}else if (grepl('csemsam1',name) & grepl('post', name)){
 						scoredf <- read.csv(paste0('analysisout/summary/CSEMsam1/post/Scores-',nst,'.csv'))
 					}else if (grepl('csemsam2',name) & grepl('post', name)){
@@ -121,14 +121,14 @@ for (name in names){
 					if (!dir.exists(paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'))){dir.create(paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'), recursive = TRUE)}
 				}
 		
-				ggplot(data=scoredf, mapping=aes(x=SimSum.Perc,y=WS.Perc))+geom_point(size=1)+labs(title=paste0('Weighted Score vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Weighted Score', n.breaks=10, limits=c(0,1))+annotate('segment', x=0, y=0, xend=1, yend=1, colour='blue', linetype='dashed')+geom_line(data=meandf, aes(x=SimSum.Perc,y=Mean.WS.Perc), color='red')
+				ggplot(data=scoredf, mapping=aes(x=SimSum.Perc,y=WS.Perc))+geom_point(size=1)+labs(title=paste0('Weighted Score vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Weighted Score', n.breaks=10, limits=c(0,1))+annotate('segment', x=0, y=0, xend=1, yend=1, colour='blue', linetype='dashed')+geom_line(data=meandf, aes(x=SimSum.Perc,y=Mean.WS.Perc), color='red')+theme_bw()
 				if (grepl('fci', name) | grepl('fmce', name) | grepl('k1',name) | grepl('csem',name)){
 					ggsave(file=paste0('WeightedScvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/'))
 				}else {
 					ggsave(file=paste0('WeightedScvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/',nit,'items','/',nst,'students','/'))
 				}
 				
-				ggplot(data=scoredf, mapping=aes(x=SimSum.Perc,y=Percent.Difference))+geom_point(size=1)+labs(title=paste0('Percent Difference vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Percent Difference: Weighted Score - SimSum Score', n.breaks=10)+annotate('segment', x = 0, xend = 1, y=0, colour='blue', linetype='dashed')+geom_line(data=meandf, aes(x=SimSum.Perc,y=Mean.Percent.Difference), color='red')
+				ggplot(data=scoredf, mapping=aes(x=SimSum.Perc,y=Percent.Difference))+geom_point(size=1)+labs(title=paste0('Percent Difference vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Percent Difference: Weighted Score - SimSum Score', n.breaks=10)+annotate('segment', x = 0, xend = 1, y=0, colour='blue', linetype='dashed')+geom_line(data=meandf, aes(x=SimSum.Perc,y=Mean.Percent.Difference), color='red')+theme_bw()
 				if (grepl('fci', name) | grepl('fmce', name) | grepl('k1',name) | grepl('csem',name)){
 					ggsave(file=paste0('PercDiffvSimSumSc-',paste0(name,r),'.pdf'), path=paste0('comparescoresout/',name,'/'))
 				}else {
@@ -151,13 +151,13 @@ plotdf <- meandata %>%
 	as_tibble() %>%
 	print()
 
-ggplot(data=plotdf, mapping=aes(x=SimSum.Perc,y=Mean.Mean.WS.Perc,group=Name,color=Name,shape=Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(plotdf$Name))])+labs(title=paste0('Mean Weighted Score vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Weighted Score', n.breaks=10, limits=c(0,1))+annotate('segment', x=0, y=0, xend=1, yend=1, colour='blue', linetype='dashed')
+ggplot(data=plotdf, mapping=aes(x=SimSum.Perc,y=Mean.Mean.WS.Perc,group=Name,color=Name,shape=Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(plotdf$Name))])+labs(title=paste0('Mean Weighted Score vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Weighted Score', n.breaks=10, limits=c(0,1))+annotate('segment', x=0, y=0, xend=1, yend=1, colour='blue', linetype='dashed')+theme_bw()
 ggsave(file=paste0('MeanWeightedScvSimSumSc.pdf'), path=paste0('comparescoresout/'))
 
-ggplot(data=plotdf, mapping=aes(x=SimSum.Perc,y=Mean.Mean.Percent.Difference,group=Name,color=Name,shape=Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(plotdf$Name))])+labs(title=paste0('Mean Percent Difference vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Percent Difference: Weighted Score - SimSum Score', n.breaks=10)+annotate('segment', x=0, xend=1, y=0, colour='blue', linetype='dashed')
+ggplot(data=plotdf, mapping=aes(x=SimSum.Perc,y=Mean.Mean.Percent.Difference,group=Name,color=Name,shape=Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(plotdf$Name))])+labs(title=paste0('Mean Percent Difference vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Percent Difference: Weighted Score - SimSum Score', n.breaks=10)+annotate('segment', x=0, xend=1, y=0, colour='blue', linetype='dashed')+theme_bw()
 ggsave(file=paste0('MeanPercDiffvSimSumSc.pdf'), path=paste0('comparescoresout/'))
 
-ggplot(data=plotdf, mapping=aes(x=SimSum.Perc,y=Mean.Mean.Abs.Percent.Difference,group=Name,color=Name,shape=Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(plotdf$Name))])+labs(title=paste0('Mean Absolute Percent Difference vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Absolute Percent Difference: Weighted Score - SimSum Score', n.breaks=10)+annotate('segment', x=0, xend=1, y=0, colour='blue', linetype='dashed')
+ggplot(data=plotdf, mapping=aes(x=SimSum.Perc,y=Mean.Mean.Abs.Percent.Difference,group=Name,color=Name,shape=Name))+geom_point()+geom_line()+scale_shape_manual(values=ggshapes[1:length(unique(plotdf$Name))])+labs(title=paste0('Mean Absolute Percent Difference vs SimSum Score'))+scale_x_continuous(name='SimSum Score', n.breaks=10, limits=c(0,1))+scale_y_continuous(name='Mean Absolute Percent Difference: Weighted Score - SimSum Score', n.breaks=10)+annotate('segment', x=0, xend=1, y=0, colour='blue', linetype='dashed')+theme_bw()
 ggsave(file=paste0('MeanAbsPercDiffvSimSumSc.pdf'), path=paste0('comparescoresout/'))
 
 

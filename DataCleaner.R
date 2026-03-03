@@ -16,7 +16,7 @@ fmcetbbl <- as_tibble(fmcedf)
 k1df <- read.csv(paste0('realdata/K1.csv'))
 k1tbbl <- as_tibble(k1df)
 
-csemwvudf <- read.csv(paste0('realdata/CSEM-Aggregated-PrePost-ANON-WVU.csv'))
+csemwvudf <- read.csv(paste0('realdata/CSEM-WVU-PrePost-Aggregated-Scored.csv'))
 csemwvutbbl <- as_tibble(csemwvudf)
 
 csemarkpredf <- read.csv(paste0('realdata/CSEM-ARK-Pretest-Aggregated-Scored.csv'))
@@ -28,8 +28,8 @@ csemarkposttbbl <- as_tibble(csemarkpostdf)
 #Define columns of interest
 fcipost <- paste0('AQ',1:30,'.y')
 fcipre <- paste0('AQ',1:30,'.x')
-fmcepre <- paste0('FMCEPre',1:47) 
-fmcepost <- paste0('FMCEPost',1:47) 
+fmcepre <- paste0('FMCEPre',1:43) 
+fmcepost <- paste0('FMCEPost',1:43) 
 k1items <- c('KD1.1.V3s','KD1.10.V7ECs','KD1.8.V5ECs','KD1.11.V7JSs','KD1.12.V3ECs','KD1.14.V3s','KD1.15.V3ECs','KD1.17.V4JSs','KD1.18.V1s','KD1.48.V2JSs','KD1.19.V4ECs','KD1.20.V5JSs','KD1.23.V4JSs','KD1.32.V8ECs','KD1.40.V7JSs','KD1.38.V8ECs','KD1.18.V5ECs','KD1.52.V5JSs','KD1.45.V3ECs','KD1.43.V8ECs')
 k1ciitems <- c('KD1.14.V3s','KD1.17.V4JSs','KD1.48.V2JSs','KD1.23.V4JSs','KD1.32.V8ECs','KD1.38.V8ECs','KD1.18.V5ECs')
 csemwvupre <- paste0('CSEMPre',1:32)
@@ -38,7 +38,7 @@ csemark <- paste0('P',1:32)
 
 #New column names
 fciItem <- paste0('Item',1:30)
-fmceItem <- paste0('Item',1:47)
+fmceItem <- paste0('Item',1:43)
 k1Item <- paste0('Item',1:20)
 k1ciItem <- paste0('Item',1:7)
 csemItem <- paste0('Item',1:32)
@@ -69,14 +69,14 @@ temp <- fmcetbbl %>%
 	filter(if_all(-c(1), ~ . != 'BLANK')) %>%
 	filter(if_all(where(is.character), ~ nchar(.x) == 1)) #%>%#filter out double selections
 
-fmcekey <- c('B','D','F','F','D','B','B','A','A','A','A','A','A','E','E','A','E','B','B','G','E','A','B','C','B','C','A','A','A','E','E','E','E','E','A','A','A','A','E','A','F','B','D','B','B','A','A')
+fmcekey <- c('B','D','F','F','D','B','B','A','A','A','A','A','A','E','E','A','E','B','B','G','E','A','B','C','B','C','A','A','A','E','E','E','E','E','A','A','A','A','E','A','F','B','D')
 
 #Score and output pretest data
 pretemp <- temp %>%
 	select(all_of(fmcepre))
 print(pretemp)
 
-for (i in 1:47){
+for (i in 1:43){
 	pretemp[fmceItem[i]] <- ifelse(pretemp[[i]] == fmcekey[i],1,0)
 }
 fmcepredata <- pretemp[,fmceItem]
@@ -88,7 +88,7 @@ posttemp <- temp %>%
 	select(all_of(fmcepost))
 print(posttemp)
 
-for (i in 1:47){
+for (i in 1:43){
 	posttemp[fmceItem[i]] <- ifelse(posttemp[[i]] == fmcekey[i],1,0)
 }
 fmcepostdata <- posttemp[,fmceItem]
@@ -159,7 +159,7 @@ write.csv(k1cipre, 'realdata/K1-7-pre.csv', row.names = FALSE)
 itemcodes <- data.frame(Old.Item.Names = gsub('s','',k1ciitems), New.Item.Names = k1ciItem)
 write.csv(itemcodes, 'realdata/K1-7-ItemCodes.csv', row.names = FALSE)
 
-print_color('====================================CSEM====================================\n','bgreen')
+print_color('==================================CSEM WVU==================================\n','bgreen')
 #Separate and score WVU data
 temp <- csemwvutbbl %>%
 	select(all_of(c(csemwvupre,csemwvupost))) %>%
@@ -193,6 +193,7 @@ csemwvupostdata <- posttemp[,csemItem]
 print(csemwvupostdata)
 write.csv(csemwvupostdata, 'realdata/CSEMsam2-post.csv', row.names = FALSE)
 
+print_color('==================================CSEM ARK==================================\n','bgreen')
 #Get pre and post from arkansas then keep only complete matched records
 pretemp <- csemarkpretbbl %>%
 	select(all_of(c('StudentID',csemark))) %>%

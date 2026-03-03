@@ -1,0 +1,13 @@
+Number of Items: 20
+Number of Students: 500
+Difficulty Parameter Distribution Type: unif
+Difficulty Min: -0.5
+Difficulty Max: 0.5
+Difficulty Weighting: eq
+Discrimination Parameter Distribution Type: unif
+Discrimination Min: 1.5
+Discrimination Max: 3.5
+Discrimination Weighting: eq
+Theta Mean: 0
+Theta Standard Deviation: 1
+Theta Weighting: eq

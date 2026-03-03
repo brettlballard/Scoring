@@ -26,7 +26,8 @@ parser <- add_argument(parser, "--bw", help = 'IRT difficulty weights',nargs='*'
 #flex mode arguments
 parser <- add_argument(parser, "--nitems", help = 'number of items when in flex mode: format input as begin,end,increment',nargs='*',default=c(10,10,0))
 parser <- add_argument(parser, "--ns", help = 'number of students when in flex mode: format input as begin,end,increment',nargs='*',default=c(1000,1000,0))
-parser <- add_argument(parser, "--pardist", help = 'parameter distribution type when in flex mode, options are norm and unif: default is norm',nargs='*',default='norm')
+parser <- add_argument(parser, "--bpardist", help = 'difficulty parameter distribution type when in flex mode, options are norm and unif: default is norm',nargs='*',default='norm')
+parser <- add_argument(parser, "--apardist", help = 'discrimination parameter distribution type when in flex mode, options are norm and unif: default is norm',nargs='*',default='norm')
 arg <- parse_args(parser)
 
 #Turning multiple input arguments into vectors
@@ -106,16 +107,40 @@ for (nit in numitems){
 				itemdiff <- multirnorm(nitems, mean=bmn, sd=bsd, w=bw)
 				
 				#Changing shapes of IRT parameter distributions
-				if (arg$shape == 'NONE'){
-					amn <- c(1,2,3)
-					asd <- c(.5,.5,.5)
-					aw <- c(.6,.3,.1)
-					itemdisc <- multirnorm(nitems, mean=amn, sd=asd, w=aw)
+				if (grepl('NONE',arg$shape)){
+					if (grepl('u',arg$shape)){
+						bmin <- c(-2.5)
+						bmax <- c(2.5)
+						bw <- c('eq')
+						itemdiff <- multirunif(nitems, min=bmin, max=bmax, w=bw)
+						arg$bpardist <- 'unif'
+						amin <- c(0)
+						amax <- c(4)
+						aw <- c('eq')
+						itemdisc <- multirunif(nitems, min=amin, max=amax, w=aw)
+						arg$apardist <- 'unif'
+					}else {
+						amn <- c(1,2,3)
+						asd <- c(.5,.5,.5)
+						aw <- c(.6,.3,.1)
+						itemdisc <- multirnorm(nitems, mean=amn, sd=asd, w=aw)
+					}
 				}else if (arg$shape == 'SPLIT'){
 					amn <- c(.5,3)
 					asd <- c(.1,.1)
 					aw <- c(.7,.3)
 					itemdisc <- multirnorm(nitems, mean=amn, sd=asd, w=aw)
+				}else if (arg$shape == 'SPREAD'){
+					bmin <- c(-.5)
+					bmax <- c(.5)
+					bw <- c('eq')
+					itemdiff <- multirunif(nitems, min=bmin, max=bmax, w=bw)
+					arg$bpardist <- 'unif'
+					amin <- c(1.5)
+					amax <- c(3.5)
+					aw <- c('eq')
+					itemdisc <- multirunif(nitems, min=amin, max=amax, w=aw)
+					arg$apardist <- 'unif'
 				}else if (grepl('LIN',arg$shape)){
 					asd <- c(.1)
 					aw <- c('eq')
@@ -125,8 +150,8 @@ for (nit in numitems){
 							formula <- 'Disc = -1 * Diff + 1.5'
 							amn <- -1 * diff + 1.5
 						}else {
-							formula <- 'Disc = 1 * Diff + 1.5'
-							amn <- 1 * diff + 1.5
+							formula <- 'Disc = .75 * Diff + 2'
+							amn <- .75 * diff + 2
 						}
 						disc <- multirnorm(1, mean=amn, sd=asd, w=aw)
 						itemdisc <- c(itemdisc,disc)
@@ -140,8 +165,8 @@ for (nit in numitems){
 							formula <- 'Disc = -2.25 * exp(-.5 * (Diff - 0)**2) + 3.5'
 							amn <- -2.5 * exp(-.5 * (diff - 0)**2) + 3.5
 						}else {
-							formula <- 'Disc = 2.25 * exp(-.5 * (Diff - 0)**2) + .75'
-							amn <- 2.25 * exp(-.5 * (diff - 0)**2) + .75
+							formula <- 'Disc = 3.5 * exp(-.75 * (Diff - 0)**2) + .25'
+							amn <- 3.5 * exp(-.75 * (diff - 0)**2) + .25
 						}
 						disc <- multirnorm(1, mean=amn, sd=asd, w=aw)
 						itemdisc <- c(itemdisc,disc)
@@ -155,8 +180,8 @@ for (nit in numitems){
 							formula <- 'Disc = 1.2 * exp(-.4 * (Diff - 0))'
 							amn <- 1.2 * exp(-.4 * (diff - 0))
 						}else {
-							formula <- 'Disc = 1.2 * exp(.4 * (Diff - 0))'
-							amn <- 1.2 * exp(.4 * (diff - 0))
+							formula <- 'Disc = 1.2 * exp(.8 * (Diff - 1))'
+							amn <- 1.2 * exp(.8 * (diff - 1))
 						}
 						disc <- multirnorm(1, mean=amn, sd=asd, w=aw)
 						itemdisc <- c(itemdisc,disc)
@@ -170,8 +195,8 @@ for (nit in numitems){
 							formula <- 'Disc = .5  + (3.25 - .5) * (1 / (1 + exp(1.5 * (Diff - 0))))'
 							amn <- .5  + (3.25 - .5) * (1 / (1 + exp(1.5 * (diff - 0))))
 						}else {
-							formula <- 'Disc = .5  + (3.25 - .5) * (1 / (1 + exp(-1.5 * (Diff - 0))))'
-							amn <- .5  + (3.25 - .5) * (1 / (1 + exp(-1.5 * (diff - 0))))
+							formula <- 'Disc = .25  + (3.75 - .25) * (1 / (1 + exp(-2.5 * (Diff - 0))))'
+							amn <- .25  + (3.75 - .25) * (1 / (1 + exp(-2.5 * (diff - 0))))
 						}
 						disc <- multirnorm(1, mean=amn, sd=asd, w=aw)
 						itemdisc <- c(itemdisc,disc)
@@ -193,22 +218,46 @@ for (nit in numitems){
 					}
 				}
 
+				#Checking if generated item parameters fall within bounds |b| <= 2.5 and 0 <= a <= 4
+				print(itemdiff)
+				print(itemdisc)
+				checkdiff <- all(abs(itemdiff) <= 2.5)
+				checkdisc <- all(itemdisc >= 0 & itemdisc <= 4)
+				if (checkdiff & checkdisc){
+					print_color(paste0('!!!!!!!!!!!!!!!!!!!!!PARAMETERS PASSED QUALITY CHECK!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+					DataCheck <- FALSE
+				}else {
+					print_color(paste0('!!!!!!!!!!!!!!!!!!!!!PARAMETERS FAILED QUALITY CHECK!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bred')
+					next
+				}
+				
 				#Saving item generators
 				if (!dir.exists(paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students'))){dir.create(paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students'), recursive = TRUE)}
 				gen <- file(paste0('simdata/flex/IRT/',arg$name,'/',nitems,'items','/',ns,'students','/',paste0(arg$name,r),'-Generators.txt'), 'w')
 				writeLines(paste0('Number of Items: ',nitems), con = gen)
 				writeLines(paste0('Number of Students: ',ns), con = gen)
-				writeLines(paste0('Parameter Distribution Type: ',arg$pardist), con = gen)
-				writeLines(paste0('Difficulty Mean: ',paste0(bmn,collapse=',')), con = gen)
-				writeLines(paste0('Difficulty Standard Deviation: ',paste0(bsd,collapse=',')), con = gen)
+				writeLines(paste0('Difficulty Parameter Distribution Type: ',arg$bpardist), con = gen)
+				if (arg$bpardist == 'norm'){
+					writeLines(paste0('Difficulty Mean: ',paste0(bmn,collapse=',')), con = gen)
+					writeLines(paste0('Difficulty Standard Deviation: ',paste0(bsd,collapse=',')), con = gen)
+				}else if (arg$bpardist == 'unif'){
+					writeLines(paste0('Difficulty Min: ',paste0(bmin,collapse=',')), con = gen)
+					writeLines(paste0('Difficulty Max: ',paste0(bmax,collapse=',')), con = gen)
+				}
 				writeLines(paste0('Difficulty Weighting: ',paste0(bw,collapse=',')), con = gen)
-				if (!grepl(paste(formshape,collapse='|'),arg$shape)){
-					writeLines(paste0('Discrimination Mean: ',paste0(amn,collapse=',')), con = gen)
+				writeLines(paste0('Discrimination Parameter Distribution Type: ',arg$apardist), con = gen)
+				if (arg$apardist == 'norm'){
+					if (!grepl(paste(formshape,collapse='|'),arg$shape)){
+						writeLines(paste0('Discrimination Mean: ',paste0(amn,collapse=',')), con = gen)
+					}
+					if (grepl(paste(formshape,collapse='|'),arg$shape)){
+						writeLines(paste0('Discrimination Formula: ',formula), con = gen)
+					}
+					writeLines(paste0('Discrimination Standard Deviation: ',paste0(asd,collapse=',')), con = gen)
+				}else if (arg$apardist == 'unif'){
+					writeLines(paste0('Discrimination Min: ',paste0(amin,collapse=',')), con = gen)
+					writeLines(paste0('Discrimination Max: ',paste0(amax,collapse=',')), con = gen)
 				}
-				if (grepl(paste(formshape,collapse='|'),arg$shape)){
-					writeLines(paste0('Discrimination Formula: ',formula), con = gen)
-				}
-				writeLines(paste0('Discrimination Standard Deviation: ',paste0(asd,collapse=',')), con = gen)
 				writeLines(paste0('Discrimination Weighting: ',paste0(aw,collapse=',')), con = gen)
 				writeLines(paste0('Theta Mean: ',paste0(thmn,collapse=',')), con = gen)
 				writeLines(paste0('Theta Standard Deviation: ',paste0(thsd,collapse=',')), con = gen)
