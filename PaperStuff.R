@@ -368,7 +368,7 @@ if ('SCORES' %in% run){
 
 	#Change names from internal codes to external codes
 	old <- c('FMCETh','CSEMsam1','CSEMsam2','FCIpostsim','FMCEpostsim','FMCEThpostsim','K1-20postsim','CSEMsam1postsim','CSEMsam2postsim','expgrow','gaussian','logist','mixednorm','poslinear','restricunif','split','uniform')
-	new <- c('FMCE Thornton','CSEM 1','CSEM 2','FCI-s','FMCE-s','FMCE Thornton-s','K1-20-s','CSEM 1-s','CSEM 2-s','Exponential Growth','Gaussian','Logistic','Mixed Normal', 'Positive Linear','Restricted Uniform','Split','Uniform')
+	new <- c('FMCE Thornton','CSEM 1','CSEM 2','FCI(S)','FMCE(S)','FMCE Thornton(S)','K1-20(S)','CSEM 1(S)','CSEM 2(S)','Exponential Growth','Gaussian','Logistic','Mixed Normal', 'Positive Linear','Restricted Uniform','Split','Uniform')
 	pldf$Name <- mapvalues(pldf$Name, from = old, to = new)
 	legnames <- mapvalues(legnames, from = old, to = new)
 	legsimnames <- mapvalues(legsimnames, from = old, to = new)
@@ -430,8 +430,8 @@ if ('SCORES' %in% run){
 
 	#Legacy Simulation Plots
 	limitvec <- c(trthpl[trthpl$Name %in% c(legsimnames),]$value)
-	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score), size=2)+labs(title=paste0('Simulated Legacy Instruments'))+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Mean R-Squared')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=2, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'))
-	ggsave(file=paste0('LegSimTests-TrThR2-Plots.pdf'), path=paste0('paperstuffout/'), legsimplot, width=7.5, height=10.5, units='in') 
+	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score), size=2)+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Mean R-Squared')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=2, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')
+	ggsave(file=paste0('LegSimTests-TrThR2-Plots.pdf'), path=paste0('paperstuffout/'), legsimplot, width=4, height=3, units='in') 
 
 	#Simulation Plots
 	limitvec <- c(trthpl[trthpl$Name %in% c(simnames),]$value)
@@ -466,8 +466,8 @@ if ('SCORES' %in% run){
 	
 	#Legacy Simulation Plots
 	limitvec <- c(trthpl[trthpl$Name %in% c(legsimnames),]$value)
-	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score), size=2)+labs(title=paste0('Simulated Legacy Instruments'))+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Rank Order RMSE')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=2, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'))
-	ggsave(file=paste0('LegSimTests-TrThRankRMSE-Plots.pdf'), path=paste0('paperstuffout/'), legsimplot, width=7.5, height=10.5, units='in') 
+	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score), size=2)+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Rank Order RMSE')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=2, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')
+	ggsave(file=paste0('LegSimTests-TrThRankRMSE-Plots.pdf'), path=paste0('paperstuffout/'), legsimplot, width=4, height=3, units='in') 
 
 	#Simulation Plots
 	limitvec <- c(trthpl[trthpl$Name %in% c(simnames),]$value)
@@ -497,8 +497,8 @@ if ('SCORES' %in% run){
 		print()
 	alphapl$Name <- mapvalues(alphapl$Name, from = old, to = new)
 
-	alphaplot <- ggplot()+geom_point(data=alphapl[alphapl$Name %in% simnames,], mapping=aes(x=Number.Items,y=Alpha,group=Name,color=Name,shape=Name))+geom_line(data=alphapl[alphapl$Name %in% simnames,], mapping=aes(x=Number.Items,y=Alpha,group=Name,color=Name))+scale_shape_manual(values=ggshapes[1:length(unique(alphapl[alphapl$Name %in% simnames,]$Name))])+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Alpha', n.breaks=10)+geom_point(data=alphapl[alphapl$Name %in% c(legnames,legsimnames),], mapping=aes(x=Number.Items,y=Alpha), size=2)+geom_text_repel(data=alphapl[alphapl$Name %in% c(legnames,legsimnames),], mapping=aes(x=Number.Items,y=Alpha,label=Name), size=4, max.overlaps=getOption('ggrepel.max.overlaps', default=Inf))+theme_bw()+theme(text=element_text(family='serif'))	
-	ggsave(file=paste0('AllTests-Alpha-Plots.pdf'), path=paste0('paperstuffout/'), alphaplot, width=7.5, height=10.5, units='in') 
+	alphaplot <- ggplot()+geom_point(data=alphapl[alphapl$Name %in% simnames,], mapping=aes(x=Number.Items,y=Alpha,group=Name,color=Name,shape=Name))+geom_line(data=alphapl[alphapl$Name %in% simnames,], mapping=aes(x=Number.Items,y=Alpha,group=Name,color=Name))+scale_shape_manual(values=ggshapes[1:length(unique(alphapl[alphapl$Name %in% simnames,]$Name))])+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Alpha', n.breaks=10)+geom_point(data=alphapl[alphapl$Name %in% c(legnames,legsimnames),], mapping=aes(x=Number.Items,y=Alpha), size=2)+geom_text_repel(data=alphapl[alphapl$Name %in% c(legnames,legsimnames),], mapping=aes(x=Number.Items,y=Alpha,label=Name), size=2, max.overlaps=getOption('ggrepel.max.overlaps', default=Inf))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')	
+	ggsave(file=paste0('AllTests-Alpha-Plots.pdf'), path=paste0('paperstuffout/'), alphaplot, width=4, height=3, units='in') 
 }
 
 
