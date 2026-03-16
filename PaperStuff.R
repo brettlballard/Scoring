@@ -485,13 +485,8 @@ if ('SCORES' %in% run){
 
 	#Legacy Simulation Plots
 	limitvec <- c(trthpl[trthpl$Name %in% c(legsimnames),]$value)
-<<<<<<< HEAD
-	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score), size=2)+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Mean R-Squared')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=2, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')
-	ggsave(file=paste0('LegSimTests-TrThR2-Plots.pdf'), path=paste0('paperstuffout/'), legsimplot, width=4, height=3, units='in') 
-=======
 	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score), size=3)+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Mean R-Squared')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=3, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(xlim=c(15,45), ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')
 	ggsave(file=paste0('LegSimTests-TrThR2-Plots.pdf'), path=paste0('paperstuffout/'), legsimplot, width=7.5, height=7.5, units='in') 
->>>>>>> 36ff62e9f (made some changes to paper plots and adding score plots to confirm rank scores output)
 
 	#Simulation Plots
 	limitvec <- c(trthpl[trthpl$Name %in% c(simnames),]$value)
@@ -526,13 +521,8 @@ if ('SCORES' %in% run){
 	
 	#Legacy Simulation Plots
 	limitvec <- c(trthpl[trthpl$Name %in% c(legsimnames),]$value)
-<<<<<<< HEAD
-	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score), size=2)+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Rank Order RMSE')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=2, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')
-	ggsave(file=paste0('LegSimTests-TrThRankRMSE-Plots.pdf'), path=paste0('paperstuffout/'), legsimplot, width=4, height=3, units='in') 
-=======
 	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score), size=3)+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Rank Order RMSE')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=3, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(xlim=c(15,45), ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')
 	ggsave(file=paste0('LegSimTests-TrThRankRMSE-Plots.pdf'), path=paste0('paperstuffout/'), legsimplot, width=7.5, height=7.5, units='in') 
->>>>>>> 36ff62e9f (made some changes to paper plots and adding score plots to confirm rank scores output)
 
 	#Simulation Plots
 	limitvec <- c(trthpl[trthpl$Name %in% c(simnames),]$value)
@@ -562,13 +552,8 @@ if ('SCORES' %in% run){
 		print()
 	alphapl$Name <- mapvalues(alphapl$Name, from = old, to = new)
 
-<<<<<<< HEAD
-	alphaplot <- ggplot()+geom_point(data=alphapl[alphapl$Name %in% simnames,], mapping=aes(x=Number.Items,y=Alpha,group=Name,color=Name,shape=Name))+geom_line(data=alphapl[alphapl$Name %in% simnames,], mapping=aes(x=Number.Items,y=Alpha,group=Name,color=Name))+scale_shape_manual(values=ggshapes[1:length(unique(alphapl[alphapl$Name %in% simnames,]$Name))])+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Alpha', n.breaks=10)+geom_point(data=alphapl[alphapl$Name %in% c(legnames,legsimnames),], mapping=aes(x=Number.Items,y=Alpha), size=2)+geom_text_repel(data=alphapl[alphapl$Name %in% c(legnames,legsimnames),], mapping=aes(x=Number.Items,y=Alpha,label=Name), size=2, max.overlaps=getOption('ggrepel.max.overlaps', default=Inf))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')	
-	ggsave(file=paste0('AllTests-Alpha-Plots.pdf'), path=paste0('paperstuffout/'), alphaplot, width=4, height=3, units='in') 
-=======
 	alphaplot <- ggplot()+geom_point(data=alphapl[alphapl$Name %in% simnames,], mapping=aes(x=Number.Items,y=Alpha,group=Name,color=Name,shape=Name))+geom_line(data=alphapl[alphapl$Name %in% simnames,], mapping=aes(x=Number.Items,y=Alpha,group=Name,color=Name))+scale_shape_manual(values=ggshapes[1:length(unique(alphapl[alphapl$Name %in% simnames,]$Name))])+scale_x_continuous(name='Number of Items', limits=c(10,45))+scale_y_continuous(name='Alpha', n.breaks=10)+geom_point(data=alphapl[alphapl$Name %in% c(legnames,legsimnames),], mapping=aes(x=Number.Items,y=Alpha), size=3)+geom_text_repel(data=alphapl[alphapl$Name %in% c(legnames,legsimnames),], mapping=aes(x=Number.Items,y=Alpha,label=Name), size=3, max.overlaps=getOption('ggrepel.max.overlaps', default=Inf))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')	
 	ggsave(file=paste0('AllTests-Alpha-Plots.pdf'), path=paste0('paperstuffout/'), alphaplot, width=7.5, height=7.5, units='in') 
->>>>>>> 36ff62e9f (made some changes to paper plots and adding score plots to confirm rank scores output)
 }
 
 if ('REALSCORES' %in% run){

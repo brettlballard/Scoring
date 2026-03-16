@@ -86,31 +86,33 @@ for (name in names){
 				RMSE.WSc <- c(RMSE.WSc, RMSErankdiff.TrTh.WSc)	
 				RMSE.RoundedWSc <- c(RMSE.RoundedWSc, RMSErankdiff.TrTh.RoundedWSc)	
 
-				#Plot scores against one another to investigate rank differences
-				if (!dir.exists(paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))){dir.create(paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'), recursive = TRUE)}
-				
-				#Tr.Th vs Est.Th
-				ggplot(data=scoredf, mapping=aes(x=Est.Theta,y=True.Theta))+geom_point()+scale_x_continuous(name='Estimated Latent', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
-				ggsave(file=paste0('TrThvsEstTh-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
-				#Tr.Th vs WSc
-				ggplot(data=scoredf, mapping=aes(x=WSc,y=True.Theta))+geom_point()+scale_x_continuous(name='Weighted Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
-				ggsave(file=paste0('TrThvsWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
-				#Tr.Th vs SimSumSc
-				ggplot(data=scoredf, mapping=aes(x=SimSumSc,y=True.Theta))+geom_point()+scale_x_continuous(name='Simple Sum Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
-				ggsave(file=paste0('TrThvsSimSumSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
-				#Tr.Th vs RoundedWSc
-				ggplot(data=scoredf, mapping=aes(x=RoundedWSc,y=True.Theta))+geom_point()+scale_x_continuous(name='Rounded Weighted Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
-				ggsave(file=paste0('TrThvsRoundedWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
-				
-				#Est.Th vs WSc
-				ggplot(data=scoredf, mapping=aes(x=WSc,y=Est.Theta))+geom_point()+scale_x_continuous(name='Weighted Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
-				ggsave(file=paste0('EstThvsWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
-				#Est.Th vs SimSumSc
-				ggplot(data=scoredf, mapping=aes(x=SimSumSc,y=Est.Theta))+geom_point()+scale_x_continuous(name='Simple Sum Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
-				ggsave(file=paste0('EstThvsSimSumSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
-				#Est.Th vs RoundedWSc
-				ggplot(data=scoredf, mapping=aes(x=RoundedWSc,y=Est.Theta))+geom_point()+scale_x_continuous(name='Rounded Weighted Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
-				ggsave(file=paste0('EstThvsRoundedWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+				if (r == 1){
+					#Plot scores against one another to investigate rank differences
+					if (!dir.exists(paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))){dir.create(paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'), recursive = TRUE)}
+					
+					#Tr.Th vs Est.Th
+					ggplot(data=scoredf, mapping=aes(x=Est.Theta,y=True.Theta))+geom_point()+scale_x_continuous(name='Estimated Latent', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
+					ggsave(file=paste0('TrThvsEstTh-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+					#Tr.Th vs WSc
+					ggplot(data=scoredf, mapping=aes(x=WSc,y=True.Theta))+geom_point()+scale_x_continuous(name='Weighted Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
+					ggsave(file=paste0('TrThvsWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+					#Tr.Th vs SimSumSc
+					ggplot(data=scoredf, mapping=aes(x=SimSumSc,y=True.Theta))+geom_point()+scale_x_continuous(name='Simple Sum Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
+					ggsave(file=paste0('TrThvsSimSumSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+					#Tr.Th vs RoundedWSc
+					ggplot(data=scoredf, mapping=aes(x=RoundedWSc,y=True.Theta))+geom_point()+scale_x_continuous(name='Rounded Weighted Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
+					ggsave(file=paste0('TrThvsRoundedWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+					
+					#Est.Th vs WSc
+					ggplot(data=scoredf, mapping=aes(x=WSc,y=Est.Theta))+geom_point()+scale_x_continuous(name='Weighted Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
+					ggsave(file=paste0('EstThvsWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+					#Est.Th vs SimSumSc
+					ggplot(data=scoredf, mapping=aes(x=SimSumSc,y=Est.Theta))+geom_point()+scale_x_continuous(name='Simple Sum Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
+					ggsave(file=paste0('EstThvsSimSumSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+					#Est.Th vs RoundedWSc
+					ggplot(data=scoredf, mapping=aes(x=RoundedWSc,y=Est.Theta))+geom_point()+scale_x_continuous(name='Rounded Weighted Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
+					ggsave(file=paste0('EstThvsRoundedWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+				}
 			}
 		}
 		print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bcyan')
