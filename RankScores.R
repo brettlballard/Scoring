@@ -22,15 +22,15 @@ arg <- parse_args(parser)
 
 #Resetting argument parameters
 if ('All' %in% arg$names){
-	names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform')
+	names <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform','FCIpostsim','FMCEpostsim','FMCEThpostsim','K1-20postsim','CSEMsam1postsim','CSEMsam2postsim')
 }else {
 	names <- strsplit(arg$names,',')[[1]]
 }
 
 #Splitting datasets for stuff below
-outputs <- list('expgrow'=350, 'expdecay'=350, 'logist'=350, 'reflogist'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'leftasym'=350, 'rightasym'=350, 'mixednorm'=350, 'split'=350, 'restricunif'=350, 'uniform'=350)
-itemiter <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform')
-sim <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform')
+outputs <- list('expgrow'=350, 'expdecay'=350, 'logist'=350, 'reflogist'=350, 'gaussian'=350, 'invgaussian'=350, 'poslinear'=350, 'neglinear'=350, 'leftasym'=350, 'rightasym'=350, 'mixednorm'=350, 'split'=350, 'restricunif'=350, 'uniform'=350, 'FCIpostsim'=50,'FMCEpostsim'=50,'FMCEThpostsim'=50,'K1-20postsim'=50,'CSEMsam1postsim'=50,'CSEMsam2postsim'=50)
+itemiter <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform','FCIpostsim','FMCEpostsim','FMCEThpostsim','K1-20postsim','CSEMsam1postsim','CSEMsam2postsim')
+sim <- c('expgrow','expdecay','logist','reflogist','gaussian','invgaussian','poslinear','neglinear','leftasym','rightasym','mixednorm','split','restricunif','uniform','FCIpostsim','FMCEpostsim','FMCEThpostsim','K1-20postsim','CSEMsam1postsim','CSEMsam2postsim')
 ggshapes <- c(0:14,32:127)
 ##############################################################################################################
 #################################################FUNCTIONS####################################################
@@ -85,6 +85,32 @@ for (name in names){
 				RMSE.SimSumSc <- c(RMSE.SimSumSc, RMSErankdiff.TrTh.SimSumSc)	
 				RMSE.WSc <- c(RMSE.WSc, RMSErankdiff.TrTh.WSc)	
 				RMSE.RoundedWSc <- c(RMSE.RoundedWSc, RMSErankdiff.TrTh.RoundedWSc)	
+
+				#Plot scores against one another to investigate rank differences
+				if (!dir.exists(paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))){dir.create(paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'), recursive = TRUE)}
+				
+				#Tr.Th vs Est.Th
+				ggplot(data=scoredf, mapping=aes(x=Est.Theta,y=True.Theta))+geom_point()+scale_x_continuous(name='Estimated Latent', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
+				ggsave(file=paste0('TrThvsEstTh-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+				#Tr.Th vs WSc
+				ggplot(data=scoredf, mapping=aes(x=WSc,y=True.Theta))+geom_point()+scale_x_continuous(name='Weighted Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
+				ggsave(file=paste0('TrThvsWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+				#Tr.Th vs SimSumSc
+				ggplot(data=scoredf, mapping=aes(x=SimSumSc,y=True.Theta))+geom_point()+scale_x_continuous(name='Simple Sum Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
+				ggsave(file=paste0('TrThvsSimSumSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+				#Tr.Th vs RoundedWSc
+				ggplot(data=scoredf, mapping=aes(x=RoundedWSc,y=True.Theta))+geom_point()+scale_x_continuous(name='Rounded Weighted Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()
+				ggsave(file=paste0('TrThvsRoundedWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+				
+				#Est.Th vs WSc
+				ggplot(data=scoredf, mapping=aes(x=WSc,y=Est.Theta))+geom_point()+scale_x_continuous(name='Weighted Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
+				ggsave(file=paste0('EstThvsWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+				#Est.Th vs SimSumSc
+				ggplot(data=scoredf, mapping=aes(x=SimSumSc,y=Est.Theta))+geom_point()+scale_x_continuous(name='Simple Sum Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
+				ggsave(file=paste0('EstThvsSimSumSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
+				#Est.Th vs RoundedWSc
+				ggplot(data=scoredf, mapping=aes(x=RoundedWSc,y=Est.Theta))+geom_point()+scale_x_continuous(name='Rounded Weighted Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
+				ggsave(file=paste0('EstThvsRoundedWSc-',paste0(name,r),'.pdf'), path=paste0('rankscoresout/',name,'/',nit,'items/',nst,'students/'))
 			}
 		}
 		print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bcyan')
