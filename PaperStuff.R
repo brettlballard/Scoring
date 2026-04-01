@@ -21,7 +21,7 @@ library(directlabels)#used to add labels on plots when lots of lines are used to
 source('src/MultiPDF.R')#use of multiple random pdfs
 source('src/DataframeToLaTeX.R')#converts a dataframe to a LaTeX table format
 
-run <- c('SCORES')
+run <- c('DIFFPROP')
 ggshapes <- c(0:14,32:127)
 
 if ('DEMO' %in% run){
@@ -68,7 +68,127 @@ if ('DEMO' %in% run){
 
 	testdemo <- data.frame('Test'=testvec, 'Number.Items'=nitemsvec, 'Number.Students'=nstudvec, 'Alpha'=alphavec, 'Cov/Var'=covvarratiovec, 'Score.Mean'=scoremnvec, 'Score.Std'=scoresdvec)
 	print(testdemo)
-	dftoLaTeX(data=testdemo, filename='paperstuffout/TestDemo.txt')
+	dftoLaTeX(data=testdemo, filename='paperstuffout/TestDemo')
+}
+
+if ('DISCPROP' %in% run){
+	#Retrieving fit statistics for the samples
+	print_color('============================================================================\n','bcyan')
+	print_color('========================2PL Discrimination Information======================\n','bcyan')
+	print_color('============================================================================\n','bcyan')
+	simnames <- c('expgrow','gaussian','logist','poslinear','mixednorm','split','restricunif','uniform')
+	legnames <- c('FCI','FMCE','FMCETh','K1-20','CSEMsam1','CSEMsam2')
+
+	discdata <- data.frame(Name = c(NA), Number.Items = c(NA), Number.Run = c(NA), Prop.High.Disc = c(NA), Prop.Low.Disc = c(NA))
+	for (name in c(simnames,legnames)){
+		print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING ',name,' ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+		if (name %in% legnames){
+			df <- read.csv(paste0('analysisout/summary/',name,'/post/AnalysisOutput1.csv'))
+		}else if (name %in% simnames){
+			df <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/AnalysisOutput350.csv'))
+		}
+
+		nitems <- unique(df$Number.Items)
+		nstud <- unique(df$Number.Students.Original)
+		nrun <- unique(df$Number.Run)
+
+		#Collect specific run data of interest
+		for (nit in nitems){	
+			for (nst in nstud){
+				for (r in nrun){
+					if (name %in% legnames){
+						pars <- read.csv(paste0('analysisout/summary/',name,'/post/2PLpar-',nst,'.csv'))
+					}else {
+						pars <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/',nit,'items/',nst,'students/2PLpar-',paste0(name,r),'.csv'))
+					}
+					#Collect discriminations	
+					disc <- pars$Est.Discrimination.2PL
+					#High disc > 2 and low disc < 1
+					hdisc <- length(disc[disc > 2])
+					ldisc <- length(disc[disc < 1])
+					prophdisc <- hdisc / nit
+					propldisc <- ldisc / nit
+
+					temp <- data.frame(Name = name, Number.Items = nit, Number.Run = r, Prop.High.Disc = prophdisc, Prop.Low.Disc = propldisc)
+					discdata <- rbind(discdata, temp)
+				}
+			}
+		}
+	}
+	discdata1 <- discdata %>%
+		na.omit(discdata) %>%
+		group_by(Name,Number.Items) %>%
+		summarize(Prop.High.Disc = mean(Prop.High.Disc), Prop.Low.Disc = mean(Prop.Low.Disc)) %>%
+		as.data.frame() %>%
+		print()
+	dftoLaTeX(data=discdata1, filename='paperstuffout/DiscriminationDataByItems')
+	discdata2 <- discdata %>%
+		na.omit(discdata) %>%
+		group_by(Name) %>%
+		summarize(Prop.High.Disc = mean(Prop.High.Disc), Prop.Low.Disc = mean(Prop.Low.Disc)) %>%
+		as.data.frame() %>%
+		print()
+	dftoLaTeX(data=discdata2, filename='paperstuffout/DiscriminationDataByNames')
+}
+
+if ('DIFFPROP' %in% run){
+	#Retrieving fit statistics for the samples
+	print_color('============================================================================\n','bcyan')
+	print_color('==========================2PL Difficulty Information========================\n','bcyan')
+	print_color('============================================================================\n','bcyan')
+	simnames <- c('expgrow','gaussian','logist','poslinear','mixednorm','split','restricunif','uniform')
+	legnames <- c('FCI','FMCE','FMCETh','K1-20','CSEMsam1','CSEMsam2')
+
+	diffdata <- data.frame(Name = c(NA), Number.Items = c(NA), Number.Run = c(NA), Prop.High.Diff = c(NA), Prop.Low.Diff = c(NA))
+	for (name in c(simnames,legnames)){
+		print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING ',name,' ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
+		if (name %in% legnames){
+			df <- read.csv(paste0('analysisout/summary/',name,'/post/AnalysisOutput1.csv'))
+		}else if (name %in% simnames){
+			df <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/AnalysisOutput350.csv'))
+		}
+
+		nitems <- unique(df$Number.Items)
+		nstud <- unique(df$Number.Students.Original)
+		nrun <- unique(df$Number.Run)
+
+		#Collect specific run data of interest
+		for (nit in nitems){	
+			for (nst in nstud){
+				for (r in nrun){
+					if (name %in% legnames){
+						pars <- read.csv(paste0('analysisout/summary/',name,'/post/2PLpar-',nst,'.csv'))
+					}else {
+						pars <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/',nit,'items/',nst,'students/2PLpar-',paste0(name,r),'.csv'))
+					}
+					#Collect difficulties	
+					diff <- pars$Est.Difficulty.2PL
+					#High diff > 1.5 and low diff < -1.5
+					hdiff <- length(diff[diff > 1.5])
+					ldiff <- length(diff[diff < -1.5])
+					prophdiff <- hdiff / nit
+					propldiff <- ldiff / nit
+
+					temp <- data.frame(Name = name, Number.Items = nit, Number.Run = r, Prop.High.Diff = prophdiff, Prop.Low.Diff = propldiff)
+					diffdata <- rbind(diffdata, temp)
+				}
+			}
+		}
+	}
+	diffdata1 <- diffdata %>%
+		na.omit(diffdata) %>%
+		group_by(Name,Number.Items) %>%
+		summarize(Prop.High.Diff = mean(Prop.High.Diff), Prop.Low.Diff = mean(Prop.Low.Diff)) %>%
+		as.data.frame() %>%
+		print()
+	dftoLaTeX(data=diffdata1, filename='paperstuffout/DifficultyDataByItems')
+	diffdata2 <- diffdata %>%
+		na.omit(diffdata) %>%
+		group_by(Name) %>%
+		summarize(Prop.High.Diff = mean(Prop.High.Diff), Prop.Low.Diff = mean(Prop.Low.Diff)) %>%
+		as.data.frame() %>%
+		print()
+	dftoLaTeX(data=diffdata2, filename='paperstuffout/DifficultyDataByNames')
 }
 
 if ('FITS' %in% run){
@@ -111,7 +231,7 @@ if ('FITS' %in% run){
 		group_by(Name) %>%
 		summarize(RMSEA = mean(Model.RMSEA), SRMSR = mean(Model.SRMSR), TLI = mean(Model.TLI), CFI = mean(Model.CFI)) %>%
 		as.data.frame() 
-	dftoLaTeX(data=tabdata, filename='paperstuffout/RealFits.txt')
+	dftoLaTeX(data=tabdata, filename='paperstuffout/RealFits')
 
 	#Summarize fit statistics for simulated instruments
 	temp <- data %>%
@@ -120,7 +240,7 @@ if ('FITS' %in% run){
 		group_by(Name,Number.Items) %>%
 		summarize(RMSEA = mean(Model.RMSEA), SRMSR = mean(Model.SRMSR), TLI = mean(Model.TLI), CFI = mean(Model.CFI)) %>%
 		as.data.frame() 
-	dftoLaTeX(data=tabdata, filename='paperstuffout/SimFits.txt')
+	dftoLaTeX(data=tabdata, filename='paperstuffout/SimFits')
 }
 
 if ('REAL' %in% run){
