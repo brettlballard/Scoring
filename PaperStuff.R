@@ -21,7 +21,7 @@ library(directlabels)#used to add labels on plots when lots of lines are used to
 source('src/MultiPDF.R')#use of multiple random pdfs
 source('src/DataframeToLaTeX.R')#converts a dataframe to a LaTeX table format
 
-run <- c('DIFFPROP')
+run <- c('PLOTSCORES')
 ggshapes <- c(0:14,32:127)
 
 if ('DEMO' %in% run){
@@ -605,7 +605,7 @@ if ('SCORES' %in% run){
 
 	#Legacy Simulation Plots
 	limitvec <- c(trthpl[trthpl$Name %in% c(legsimnames),]$value)
-	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score), size=3)+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Mean R-Squared')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=3, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(xlim=c(15,45), ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')
+	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score,shape=Score), size=3)+scale_shape_manual(values=ggshapes[1:length(unique(trthpl$Score))])+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Mean R-Squared')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=4, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(xlim=c(15,45), ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')
 	ggsave(file=paste0('LegSimTests-TrThR2-Plots.pdf'), path=paste0('paperstuffout/'), legsimplot, width=7.5, height=7.5, units='in') 
 
 	#Simulation Plots
@@ -641,7 +641,7 @@ if ('SCORES' %in% run){
 	
 	#Legacy Simulation Plots
 	limitvec <- c(trthpl[trthpl$Name %in% c(legsimnames),]$value)
-	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score), size=3)+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Rank Order RMSE')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=3, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(xlim=c(15,45), ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')
+	legsimplot <- ggplot()+geom_point(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,group=Score,color=Score,shape=Score), size=3)+scale_shape_manual(values=ggshapes[1:length(unique(trthpl$Score))])+scale_x_continuous(name='Number of Items')+scale_y_continuous(name='Rank Order RMSE')+geom_text_repel(data=trthpl[trthpl$Name %in% legsimnames,], mapping=aes(x=Items,y=value,label=gsub('postsim','',Name)), size=3, max.overlaps=getOption('ggrepel.max.overlaps',default=Inf))+coord_cartesian(xlim=c(15,45), ylim=c(min(limitvec),max(limitvec)))+theme_bw()+theme(text=element_text(family='serif'), legend.position='none')
 	ggsave(file=paste0('LegSimTests-TrThRankRMSE-Plots.pdf'), path=paste0('paperstuffout/'), legsimplot, width=7.5, height=7.5, units='in') 
 
 	#Simulation Plots
@@ -676,31 +676,110 @@ if ('SCORES' %in% run){
 	ggsave(file=paste0('AllTests-Alpha-Plots.pdf'), path=paste0('paperstuffout/'), alphaplot, width=7.5, height=7.5, units='in') 
 }
 
-if ('REALSCORES' %in% run){
+if ('PLOTSCORES' %in% run){
 	print_color('============================================================================\n','bcyan')
 	print_color('======================Collecting Score Comparison Output====================\n','bcyan')
 	print_color('============================================================================\n','bcyan')
+	simnames <- c('expgrow','gaussian','logist','poslinear','mixednorm','split','restricunif','uniform')
 	legnames <- c('FCI','FMCE','FMCETh','K1-20','CSEMsam1','CSEMsam2')
-	for (name in legnames){
+	legsimnames <- c('FCIpostsim','FMCEpostsim','FMCEThpostsim','K1-20postsim','CSEMsam1postsim','CSEMsam2postsim')
+
+	#Collect scores for the first run to plot against
+	for (name in c(simnames,legnames,legsimnames)){
 		print_color(paste0('!!!!!!!!!!!!!!!!!!!!!!!RUNNING ',name,' ANALYSIS!!!!!!!!!!!!!!!!!!!!!!!!!!!\n'),'bgreen')
-		df <- read.csv(paste0('analysisout/summary/',name,'/post/AnalysisOutput1.csv'))
-		nitems <- unique(df$Number.Items)
-		nst <- unique(df$Number.Students.Original)
+		if (name %in% legnames){
+			df <- read.csv(paste0('analysisout/summary/',name,'/post/AnalysisOutput1.csv'))
+		}else if (name %in% legsimnames){
+			df <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/AnalysisOutput50.csv'))
+		}else if (name %in% simnames){
+			df <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/AnalysisOutput350.csv'))
+		}
+	
+		#So as not to produce too many plots, will look at specific simulations 
+		r <- 1
+		if (name %in% legnames){
+			nit <- unique(df$Number.Items)
+			nst <- unique(df$Number.Students.Original)
+		}else if (name %in% legsimnames){
+			nst <- 5000
+			if (name == 'FMCEpostsim'){
+				nit <- 43
+			}else if (name == 'K1-20postsim'){
+				nit <- 20
+			}else if (name == 'FCIpostsim'){
+				nit <- 29
+			}else if (name == 'CSEMsam1postsim' | name == 'CSEMsam2postsim'){
+				nit <- 32
+			}else if (name == 'FMCEThpostsim'){
+				nit <- 30
+			}
+		}else if (name %in% simnames){
+			nit <- 30
+			nst <- 5000
+		}
 
 		#Collect specific run data of interest
-		scores <- read.csv(paste0('analysisout/summary/',name,'/post/Scores-',nst,'.csv'))
-		scores$RoundedWSc <- round(scores$Scaled.Weighted.Score,0)
+		if (name %in% legnames){
+			scores <- read.csv(paste0('analysisout/summary/',name,'/post/Scores-',nst,'.csv'))
+		}else {
+			scores <- read.csv(paste0('analysisout/summary/IRT/flex/',name,'/',nit,'items','/',nst,'students','/Scores-',paste0(name,r),'.csv'))
+		}
+
+		scoredf <- scores %>%
+			rename(SimSumSc = SimSum.Score, WSc = Scaled.Weighted.Score)
+
+		#Round WSc to test integer effect
+		scoredf$RoundedWSc <- round(scoredf$WSc,0)
+
+		if (name %in% c(legsimnames,simnames)){
+			#Plot scores against true latent
+			#Tr.Th vs Est.Th
+			trthvestth <- ggplot(data=scoredf, mapping=aes(x=Est.Theta,y=True.Theta))+geom_point()+labs(title=paste0('(e) True Latent vs Estimated Latent'))+scale_x_continuous(name='Estimated Latent', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()+theme(text=element_text(family='serif'), plot.title=element_text(size=10))
+			#Tr.Th vs WSc
+			trthvws <- ggplot(data=scoredf, mapping=aes(x=WSc,y=True.Theta))+geom_point()+labs(title=paste0('(f) True Latent vs Weighted Score'))+scale_x_continuous(name='Weighted Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()+theme(text=element_text(family='serif'), plot.title=element_text(size=10))
+			#Tr.Th vs RoundedWSc
+			trthvrws <- ggplot(data=scoredf, mapping=aes(x=RoundedWSc,y=True.Theta))+geom_point()+labs(title=paste0('(g) True Latent vs Rounded Weighted Score'))+scale_x_continuous(name='Rounded Weighted Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()+theme(text=element_text(family='serif'), plot.title=element_text(size=10))
+			#Tr.Th vs SimSumSc
+			trthvss <- ggplot(data=scoredf, mapping=aes(x=SimSumSc,y=True.Theta))+geom_point()+labs(title=paste0('(h) True Latent vs Simple Sum Score'))+scale_x_continuous(name='Simple Sum Score', n.breaks=10)+scale_y_continuous(name='True Latent', n.breaks=10)+theme_bw()+theme(text=element_text(family='serif'), plot.title=element_text(size=10))
+		}
 
 		#Plot scores against the estimated latent
 		#Est.Th vs WSc
-		ggplot(data=scores, mapping=aes(x=Scaled.Weighted.Score,y=Est.Theta))+geom_point()+scale_x_continuous(name='Weighted Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
-		ggsave(file=paste0('EstThvsWSc-',paste0(name),'.pdf'), path=paste0('paperstuffout/'))
-		#Est.Th vs SimSumSc
-		ggplot(data=scores, mapping=aes(x=SimSum.Score,y=Est.Theta))+geom_point()+scale_x_continuous(name='Simple Sum Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
-		ggsave(file=paste0('EstThvsSimSumSc-',paste0(name),'.pdf'), path=paste0('paperstuffout/'))
+		estthvws <- ggplot(data=scoredf, mapping=aes(x=WSc,y=Est.Theta))+geom_point()+labs(title=paste0('(a) Estimated Latent vs Weighted Score'))+scale_x_continuous(name='Weighted Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()+theme(text=element_text(family='serif'), plot.title=element_text(size=10))
 		#Est.Th vs RoundedWSc
-		ggplot(data=scores, mapping=aes(x=RoundedWSc,y=Est.Theta))+geom_point()+scale_x_continuous(name='Rounded Weighted Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()
-		ggsave(file=paste0('EstThvsRoundedWSc-',paste0(name),'.pdf'), path=paste0('paperstuffout/'))
+		estthvrws <- ggplot(data=scoredf, mapping=aes(x=RoundedWSc,y=Est.Theta))+geom_point()+labs(title=paste0('(b) Estimated Latent vs Rounded Weighted Score'))+scale_x_continuous(name='Rounded Weighted Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()+theme(text=element_text(family='serif'), plot.title=element_text(size=10))
+		#Est.Th vs SimSumSc
+		estthvss <- ggplot(data=scoredf, mapping=aes(x=SimSumSc,y=Est.Theta))+geom_point()+labs(title=paste0('(c) Estimated Latent vs Simple Sum Score'))+scale_x_continuous(name='Simple Sum Score', n.breaks=10)+scale_y_continuous(name='Estimated Latent', n.breaks=10)+theme_bw()+theme(text=element_text(family='serif'), plot.title=element_text(size=10))
+		
+		#Plot simple sum score against the weighted score
+		#WSc vs SimSumSc
+		wsvss <- ggplot(data=scoredf, mapping=aes(x=SimSumSc,y=WSc))+geom_point()+labs(title=paste0('(d) Weighted Score vs Simple Sum Score'))+scale_x_continuous(name='Simple Sum Score', n.breaks=10)+scale_y_continuous(name='Weighted Score', n.breaks=10)+theme_bw()+theme(text=element_text(family='serif'), plot.title=element_text(size=10))
+
+		#Change names from internal codes to external codes
+		old <- c('FMCETh','CSEMsam1','CSEMsam2','FCIpostsim','FMCEpostsim','FMCEThpostsim','K1-20postsim','CSEMsam1postsim','CSEMsam2postsim','expgrow','gaussian','logist','mixednorm','poslinear','restricunif','split','uniform')
+		new <- c('FMCE Thornton','CSEM 1','CSEM 2','FCI(S)','FMCE(S)','FMCE Thornton(S)','K1-20(S)','CSEM 1(S)','CSEM 2(S)','Exponential Growth','Gaussian','Logistic','Mixed Normal', 'Positive Linear','Restricted Uniform','Split','Uniform')
+		name <- mapvalues(name, from = old, to = new)
+		legnames <- mapvalues(legnames, from = old, to = new)
+		legsimnames <- mapvalues(legsimnames, from = old, to = new)
+		simnames <- mapvalues(simnames, from = old, to = new)
+
+		#Combine score plots for each sample
+		if (name %in% legnames){
+			scoreplot <- plot_grid(estthvws,estthvrws,estthvss,wsvss, ncol=2)
+			title <- ggdraw()+draw_label(name,fontface='bold')+theme_bw()+theme(text=element_text(family='serif'), panel.border=element_blank(), plot.background=element_blank(), panel.background=element_blank())
+			scoreplot <- plot_grid(title, scoreplot, ncol=1, rel_heights=c(.05,1))
+			ggsave(file=paste0('ScorePlots-',name,'.pdf'), path=paste0('paperstuffout/'), scoreplot, width=7.5, height=7.5, units='in') 
+		}else {
+			scoreplot <- plot_grid(estthvws,estthvrws,estthvss,wsvss,trthvestth,trthvws,trthvrws,trthvss, ncol=2)
+			title <- ggdraw()+draw_label(name,fontface='bold')+theme_bw()+theme(text=element_text(family='serif'), panel.border=element_blank(), plot.background=element_blank(), panel.background=element_blank())
+			scoreplot <- plot_grid(title, scoreplot, ncol=1, rel_heights=c(.05,1))
+			ggsave(file=paste0('ScorePlots-',name,'.pdf'), path=paste0('paperstuffout/'), scoreplot, width=7.5, height=10.5, units='in') 
+		}
+
+		#Reset these
+		legnames <- mapvalues(legnames, from = new, to = old)
+		legsimnames <- mapvalues(legsimnames, from = new, to = old)
+		simnames <- mapvalues(simnames, from = new, to = old)
 	}
 }
 
